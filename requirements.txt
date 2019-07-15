@@ -1,0 +1,9 @@
+Django==1.11.22
+Django-debug-toolbar
+Markdown
+django-filter
+djangorestframework
+django-rest-auth
+Pillow
+django-ckeditor
+django-cors-headers==2.5.2

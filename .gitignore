@@ -1,0 +1,9 @@
+*.pyc
+*.swp
+*.db
+/env/
+/pyenv/
+/venv/
+/Trash/
+/evotor/private_settings.py
+.htaccess

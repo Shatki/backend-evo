@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django-debug-toolbar = "*"
+django-filter = "*"
+djangorestframework = "*"
+django-rest-auth = "*"
+django-ckeditor = "*"
+django-cors-headers = "==2.5.2"
+Django = "==1.11.22"
+Markdown = "*"
+Pillow = "*"
+requirements-txt = "*"
+
+[requires]
+python_version = "2.7"
