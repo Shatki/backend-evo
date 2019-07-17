@@ -8,18 +8,18 @@ from products.models import Product
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('email', 'username', )
+        fields = ['email', 'username']
 
 
 class StoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
-        fields = ('uuid', 'address', 'name', 'code',)
+        fields = ['uuid', 'address', 'name', 'code']
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('uuid', 'name', 'group', 'parentUuid', 'type', 'quantity',
+        fields = ['uuid', 'name', 'group', 'parentUuid', 'type', 'quantity',
                   'measureName', 'tax', 'price', 'allowToSell', 'costPrice', 'description',
-                  'articleNumber', 'code', 'barCodes',)
+                  'articleNumber', 'code', 'barCodes']
