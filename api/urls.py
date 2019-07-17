@@ -26,9 +26,14 @@ from . import views
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     # url('^users/', include('users.urls')),
+    url('^stores/', views.StoreView.as_view()),
+    url('^stores/<int:pk>', views.StoreView.as_view()),
+
     url('', views.UserListView.as_view()),
     url('^rest-auth/', include('rest_auth.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     # url(r'', include(router.urls)),
-    url('^subscription/event', include('users.urls')),
+
+
+    #url('^subscription/event', include('users.urls')),
 ]
