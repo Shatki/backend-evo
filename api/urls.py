@@ -15,27 +15,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
-# from rest_framework import routers
-from rest_framework.urlpatterns import format_suffix_patterns
+from rest_framework import routers
 from . import views
 
-# router = routers.DefaultRouter()
-# router.register(r'users', views.UserViewSet)
-# router.register(r'groups', views.GroupViewSet)
+router = routers.DefaultRouter()
+router.register(r'users', views.UserViewSet, basename='User')
+#router.register(r'groups', views.GroupViewSet)
+router.register(r'stores', views.StoreViewSet, basename='Store')
+
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     # url('^users/', include('users.urls')),
-    url(r'^stores/$', views.StoreList.as_view()),
-    url(r'^stores/(?P<uuid>[0-9A-Fa-f-]+/$)', views.StoreDetail.as_view()),
-
+    #url(r'^stores/$', views.StoreList.as_view()),
+    #url(r'^stores/(?P<uuid>[0-9A-Fa-f-]+/$)', views.StoreDetail.as_view()),
     # url('', views.UserList.as_view()),
-
     url(r'^rest-auth/', include('rest_auth.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    # url(r'', include(router.urls)),
     #url('^subscription/event', include('users.urls')),
 ]
 
-#urlpatterns = format_suffix_patterns(urlpatterns)
+urlpatterns += router.urls
