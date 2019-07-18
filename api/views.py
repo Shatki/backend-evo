@@ -15,12 +15,37 @@ from stores.models import Store
 @permission_classes((permissions.AllowAny,))
 # Create your views here.
 class UserViewSet(viewsets.ViewSet):
+    """
+            Просмотр пользователей
+    """
+    @staticmethod
+    def get_object(pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise Http404
 
     def list(self, request):
         queryset = User.objects.all()
         serializer = serializers.UserSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    def create(self, request):
+        pass
+
+    def retrieve(self, request, pk):
+        user = self.get_object(pk)
+        serializer = serializers.StoreSerializer(user)
+        return Response(serializer.data)
+
+    def update(self, request, pk):
+        pass
+
+    def partial_update(self, request, pk=None):
+        pass
+
+    def destroy(self, request, pk):
+        pass
 
 
 @permission_classes((permissions.AllowAny,))

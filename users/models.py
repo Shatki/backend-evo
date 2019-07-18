@@ -31,10 +31,18 @@ class User(AbstractUser):
         verbose_name_plural = u'пользователи'
         db_table = 'users'
 
-    name = models.CharField(blank=True, max_length=255)
+    # Идентификатор пользователя.
+    id = models.CharField(verbose_name=u'Id пользователя', max_length=18, primary_key=True,
+                              default=uuid.uuid4, editable=True, unique=True, null=False)
+    userId = models.CharField(verbose_name=u'идентификатор пользователя ', max_length=18,
+                              default=uuid.uuid4, editable=True, unique=True, null=False)
 
     def __str__(self):
-        return self.email
+        return self.username
+
+    # def save(self, *args, **kwargs):
+    #    self.userId = self.userId.encode('utf-8')
+    #    super(User, self).save(*args, **kwargs)  # Call the "real" save() method.
 
 
 class Subscription(models.Model):
@@ -43,16 +51,15 @@ class Subscription(models.Model):
         verbose_name_plural = u'подписки на приложение'
 
     # Идентификатор подписки. "subscriptionId": "a99fbf70-6307-4acc-b61c-741ee9eef6c0",
-    subscriptionId = models.UUIDField(verbose_name=u'идентификатор подписки', primary_key=True, default=uuid.uuid4,
-                                      editable=False, unique=True, null=False)
+    subscriptionId = models.UUIDField(verbose_name=u'идентификатор подписки', primary_key=True,
+                                      default="01-000000000000001", editable=False, null=False)
 
     # Идентификатор приложения. "productId": "c0d01x35-5193-4cc2-9bfb-be20e0679498",
     productId = models.UUIDField(verbose_name=u'идентификатор приложения', default=uuid.uuid4,
                                  editable=False, unique=True, null=False)
 
     # Идентификатор пользователя в Облаке Эвотор. "userId": "01-000000000000001",
-    userId = models.UUIDField(verbose_name=u'идентификатор пользователя в Облаке Эвотор', default=uuid.uuid4,
-                              editable=False, unique=True, null=False)
+    userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя в Облаке Эвотор')
 
     # Дата и время отправки события. В соответствовии с ISO 8601. "timestamp": "2017-04-20T18:26:37.753+0000",
     timestamp = models.DateTimeField(verbose_name=u'дата и время отправки события')
