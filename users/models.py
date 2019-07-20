@@ -32,13 +32,14 @@ class User(AbstractUser):
         db_table = 'users'
 
     # Идентификатор пользователя.
-    id = models.CharField(verbose_name=u'Id пользователя', max_length=18, primary_key=True,
-                              default=uuid.uuid4, editable=True, unique=True, null=False)
-    userId = models.CharField(verbose_name=u'идентификатор пользователя ', max_length=18,
-                              default=uuid.uuid4, editable=True, unique=True, null=False)
+    userId = models.CharField(verbose_name=u'идентификатор пользователя ', max_length=18, primary_key=True,
+                          default="01-000000000000001", editable=True, unique=True, null=False)
+
+
 
     def __str__(self):
         return self.username
+
 
     # def save(self, *args, **kwargs):
     #    self.userId = self.userId.encode('utf-8')
