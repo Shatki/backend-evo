@@ -11,7 +11,8 @@ class Store(models.Model):
         verbose_name_plural = u'магазины'
         db_table = 'stores'
 
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True, null=False)
+    uuid = models.UUIDField(primary_key=True,
+                            default=uuid.uuid4, editable=False, unique=True, null=False)
     address = models.CharField(verbose_name=u'адрес магазина', max_length=100, null=True)
     name = models.CharField(verbose_name=u'имя магазина', max_length=50, null=False,
                             default=u'мой магазин'.encode('utf-8'))

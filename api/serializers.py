@@ -8,7 +8,7 @@ from products.models import Product
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['userId', 'email', 'username']
+        fields = ['userId', 'email', 'username', 'first_name', 'last_name',]
 
 
 class StoreSerializer(serializers.ModelSerializer):
