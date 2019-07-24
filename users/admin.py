@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .forms import UserCreationForm, UserChangeForm
-from .models import User
+from .models import User, Subscription
 
 
 @admin.register(User)
@@ -86,3 +86,48 @@ class UserAdmin(UserAdmin):
         'groups',
         'user_permissions',
     )
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    model = Subscription
+
+    list_display = (
+        'subscriptionId',
+        'productId',
+        'userId',
+        'timestamp',
+        'type',
+        )
+
+    list_filter = (
+        'timestamp',
+        'type',
+    )
+
+    fieldsets = (
+        (u'Подписка', {
+            'fields': (
+                'subscriptionId',
+                'productId',
+                'userId',
+                'trialPeriodDuration',
+                'deviceNumber',
+            )
+        }),
+
+        (u'Информация о продлении', {
+            'fields': (
+                'timestamp',
+                'sequenceNumber',
+                'type',
+                'planId',
+            )
+        }),
+    )
+
+    search_fields = (
+        'userId',)
+
+    ordering = (
+        'timestamp',)

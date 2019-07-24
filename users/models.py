@@ -88,11 +88,11 @@ class Subscription(models.Model):
 
     # Идентификатор подписки. "subscriptionId": "a99fbf70-6307-4acc-b61c-741ee9eef6c0",
     subscriptionId = models.UUIDField(verbose_name=u'идентификатор подписки', primary_key=True,
-                                      default="01-000000000000001", editable=False, null=False)
+                                      default=uuid.uuid4, null=False)
 
     # Идентификатор приложения. "productId": "c0d01x35-5193-4cc2-9bfb-be20e0679498",
     productId = models.UUIDField(verbose_name=u'идентификатор приложения', default=uuid.uuid4,
-                                 editable=False, unique=True, null=False)
+                                 unique=True, null=False)
 
     # Идентификатор пользователя в Облаке Эвотор. "userId": "01-000000000000001",
     userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя в Облаке Эвотор',
@@ -124,5 +124,15 @@ class Subscription(models.Model):
     type = models.CharField(verbose_name=u'тип события', max_length=40)
 
     # "planId": "example",
+    # Идентификатор тарифа, который вы создаёте на портале разработчиков.
+    planId = models.UUIDField(verbose_name=u'идентификатор тарифа', default=uuid.uuid4, null=False)
+
     # "trialPeriodDuration": "P14DT",
-    # "deviceNumber": 35
+    # Строка вида PnDT, где n – количество дней бесплатного периода, доступных пользователю в момент активации тарифа.
+    trialPeriodDuration = models.CharField(verbose_name=u'количество дней бесплатного периода', max_length=4,
+                                           default='P07DT')
+    # Количество оплаченных устройств. "deviceNumber": 35
+    deviceNumber = models.IntegerField(u'количество оплаченных устройств', default=1)
+
+    def __str__(self):
+        return self.subscriptionId
