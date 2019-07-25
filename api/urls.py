@@ -20,8 +20,11 @@ from . import views
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet, basename='User')
+router.register(r'subscriptions', views.SubscriptionViewSet, basename='Subscription')
+router.register(r'subscription/event', views.SubscriptionEventViewSet, basename='SubscriptionEvent')
 #router.register(r'groups', views.GroupViewSet)
 router.register(r'stores', views.StoreViewSet, basename='Store')
+
 
 
 # Wire up our API using automatic URL routing.

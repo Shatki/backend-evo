@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 from users.models import User
+from applications.models import Subscription
 from stores.models import Store
 from products.models import Product
 
@@ -23,3 +24,11 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['uuid', 'name', 'group', 'parentUuid', 'type', 'quantity',
                   'measureName', 'tax', 'price', 'allowToSell', 'costPrice', 'description',
                   'articleNumber', 'code', 'barCodes']
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ['subscriptionId', 'productId', 'userId',
+                  'timestamp', 'sequenceNumber', 'type',
+                  'planId', 'trialPeriodDuration', 'deviceNumber']
