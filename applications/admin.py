@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.contrib import admin
-from .models import Subscription, Application, Installation
+from .models import Subscription, Application, Installation, InstallationData
 
 
 # Register your models here.
@@ -78,3 +78,13 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
     ordering = (
         'timestamp',)
+
+
+@admin.register(InstallationData)
+class InstallationAdmin(admin.ModelAdmin):
+    model = InstallationData
+
+    list_display = (
+        'productId',
+        'userId',
+    )

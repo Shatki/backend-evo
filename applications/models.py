@@ -23,6 +23,10 @@ class Application(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        self.name = self.name.encode('utf-8')
+        super(Application, self).save(*args, **kwargs)  # Call the "real" save() method.
+
 
 class Subscription(models.Model):
     class Meta:
@@ -90,8 +94,8 @@ class Subscription(models.Model):
 
 class InstallationData(models.Model):
     class Meta:
-        verbose_name = u'установка приложения'
-        verbose_name_plural = u'установка приложений'
+        verbose_name = u'установочные данные'
+        verbose_name_plural = u'установочные данные'
         db_table = u'installations_data'
 
     productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения Эвотор')
