@@ -38,13 +38,10 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['email', ]
 
     def __unicode__(self):
-        return u'%s' % self.username
+        return u'%s' % self.userId
 
     def __str__(self):
-        return u'%s' % self.username
-
-    def get_photo(self):
-        return self.photo
+        return u'%s' % self.userId
 
     def get_full_name(self):
         return u'%s %s' % (self.first_name, self.last_name)

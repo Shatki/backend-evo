@@ -4,6 +4,7 @@ from users.models import User
 from applications.models import Subscription
 from stores.models import Store
 from products.models import Product
+from applications.models import Application, Installation, InstallationData
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -23,7 +24,13 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = ['uuid', 'name', 'group', 'parentUuid', 'type', 'quantity',
                   'measureName', 'tax', 'price', 'allowToSell', 'costPrice', 'description',
-                  'articleNumber', 'code', 'barCodes']
+                  'articleNumber', 'code', 'barCodes', ]
+
+
+class ApplicationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Application
+        fields = ['name', 'uuid', 'version', ]
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -31,4 +38,18 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         model = Subscription
         fields = ['subscriptionId', 'productId', 'userId',
                   'timestamp', 'sequenceNumber', 'type',
-                  'planId', 'trialPeriodDuration', 'deviceNumber']
+                  'planId', 'trialPeriodDuration', 'deviceNumber', ]
+
+
+class InstallationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Installation
+        fields = ['id', 'timestamp', 'version', 'type', 'data', ]
+
+
+class InstallationDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InstallationData
+        fields = ['productId', 'userId', ]
+
+
