@@ -13,15 +13,15 @@ class Application(models.Model):
         verbose_name_plural = u'приложения'
         db_table = u'applications'
 
+    uuid = models.UUIDField(verbose_name=u'идентификатор приложения', primary_key=True,
+                            unique=False, null=False, default=uuid.uuid4)
     name = models.CharField(verbose_name=u'наименование приложения', max_length=100,
                             unique=True, null=False)
-    uuid = models.UUIDField(verbose_name=u'идентификатор приложения',
-                            unique=False, null=False, default=uuid.uuid4)
     version = models.DecimalField(verbose_name=u'версия приложения', null=False, max_digits=4,
                                   decimal_places=2, default=0.1)
 
     def __str__(self):
-        return self.name
+        return self.name.encode('utf-8')
 
     def save(self, *args, **kwargs):
         self.name = self.name.encode('utf-8')
@@ -102,7 +102,12 @@ class InstallationData(models.Model):
     userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор')
 
     def __str__(self):
-        return '{}: {}'.format(self.userId, self.productId)
+        return u'{}: {}'.format(self.userId, self.productId)
+
+    # def save(self, *args, **kwargs):
+    #    self.productId = self.productId.uuid
+    #    self.userId = self.userId.id
+    #    super(InstallationData, self).save(*args, **kwargs)  # Call the "real" save() method.
 
 
 class Installation(models.Model):
@@ -135,4 +140,4 @@ class Installation(models.Model):
     data = models.ForeignKey(InstallationData, verbose_name=u'служебная информация', on_delete=models.CASCADE)
 
     def __str__(self):
-        return '{}[{}]'.format(self.id, self.type)
+        return u'{}[{}]'.format(self.id, self.type)

@@ -12,9 +12,9 @@ class User(AbstractUser):
         verbose_name_plural = u'пользователи'
         db_table = u'users'
 
-    # Идентификатор пользователя.
-    userId = models.CharField(verbose_name=u'идентификатор пользователя ', max_length=18,
-                              default="01-000000000000001", editable=True, unique=True, null=False)
+    # Идентификатор пользователя. 18 символов
+    userId = models.BigIntegerField(verbose_name=u'идентификатор пользователя ', primary_key=True,
+                                    default=1000000000000001, editable=True, unique=True, null=False)
 
     # Имя логина авторизации
     username = models.CharField(verbose_name=u'имя пользователя в системе', unique=True, max_length=30, db_index=True,
@@ -41,7 +41,8 @@ class User(AbstractUser):
         return u'%s' % self.userId
 
     def __str__(self):
-        return u'%s' % self.userId
+        id = (('000000000000000' + str(self.userId))[-15:])
+        return u'01-{}'.format(self.userId)
 
     def get_full_name(self):
         return u'%s %s' % (self.first_name, self.last_name)
