@@ -98,8 +98,8 @@ class InstallationData(models.Model):
         verbose_name_plural = u'установочные данные'
         db_table = u'installations_data'
 
-    productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения Эвотор')
-    userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор')
+    productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения Эвотор', db_column='product_id')
+    userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор', db_column='user_id')
 
     def __str__(self):
         return u'{}: {}'.format(self.userId, self.productId)

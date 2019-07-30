@@ -14,8 +14,7 @@ class User(AbstractUser):
 
     # Идентификатор пользователя. 18 символов
     userId = models.BigIntegerField(verbose_name=u'идентификатор пользователя ', primary_key=True,
-                                    default=1000000000000001, editable=True, unique=True, null=False)
-
+                                    default=10000000000000001, editable=True, unique=True, null=False)
     # Имя логина авторизации
     username = models.CharField(verbose_name=u'имя пользователя в системе', unique=True, max_length=30, db_index=True,
                                 validators=[login])
@@ -38,21 +37,22 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['email', ]
 
     def __unicode__(self):
-        return u'%s' % self.userId
+        user_id = (('00-000000000000000' + str(self.userId))[-18:])
+        return u'{}-{}'.format(user_id[0:2], user_id[2:18])
 
     def __str__(self):
-        id = (('000000000000000' + str(self.userId))[-15:])
-        return u'01-{}'.format(self.userId)
+        user_id = (('00-000000000000000' + str(self.userId))[-18:])
+        return u'{}-{}'.format(user_id[0:2], user_id[2:18])
 
     def get_full_name(self):
-        return u'%s %s' % (self.first_name, self.last_name)
+        return u'{} {}'.format(self.first_name, self.last_name)
 
     def get_short_name(self):
         return self.first_name
 
-    def save(self, *args, **kwargs):
-        self.userId = self.userId.encode('utf-8')
-        super(User, self).save(*args, **kwargs)  # Call the "real" save() method.
+    # def save(self, *args, **kwargs):
+    #     self.userId = self.userId.encode('utf-8')
+    #     super(User, self).save(*args, **kwargs)  # Call the "real" save() method.
 
     def has_perm(self, perm, obj=None):
         return True
