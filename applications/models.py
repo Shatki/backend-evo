@@ -5,6 +5,7 @@ from django.db import models
 from users.models import User
 from .constants import SUBSCRIPTION_TYPES, SUBSCRIPTION_TYPE_DEFAULT
 from .constants import APPLICATION_EVENT_DEFAULT, APPLICATION_EVENT_TYPES
+from evotor.api_settings import DEFAULT_USER_ID
 
 
 class Application(models.Model):
@@ -92,24 +93,6 @@ class Subscription(models.Model):
         return str(self.subscriptionId)
 
 
-class InstallationData(models.Model):
-    class Meta:
-        verbose_name = u'установочные данные'
-        verbose_name_plural = u'установочные данные'
-        db_table = u'installations_data'
-
-    productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения Эвотор', db_column='product_id')
-    userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор', db_column='user_id')
-
-    def __str__(self):
-        return u'{}: {}'.format(self.userId, self.productId)
-
-    # def save(self, *args, **kwargs):
-    #    self.productId = self.productId.uuid
-    #    self.userId = self.userId.id
-    #    super(InstallationData, self).save(*args, **kwargs)  # Call the "real" save() method.
-
-
 class Installation(models.Model):
     class Meta:
         verbose_name = u'установка приложения'
@@ -137,7 +120,27 @@ class Installation(models.Model):
     type = models.CharField(verbose_name=u'тип события', max_length=40, choices=APPLICATION_EVENT_TYPES,
                             default=APPLICATION_EVENT_DEFAULT)
 
-    data = models.ForeignKey(InstallationData, verbose_name=u'служебная информация', on_delete=models.CASCADE)
-
     def __str__(self):
         return u'{}[{}]'.format(self.id, self.type)
+
+
+class InstallationData(models.Model):
+    class Meta:
+        verbose_name = u'установочные данные'
+        verbose_name_plural = u'установочные данные'
+        db_table = u'installations_data'
+
+    productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения Эвотор',
+                                  default=uuid.uuid4, db_column='product_id',)
+    userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор',
+                               default=DEFAULT_USER_ID, db_column='user_id')
+    installation = models.ForeignKey(Installation, verbose_name=u'служебная информация',
+                                     default=None, on_delete=models.CASCADE,)
+
+    def __str__(self):
+        return u'{}: {}, {}'.format(self.installation, self.userId, self.productId)
+
+    # def save(self, *args, **kwargs):
+    #    self.productId = self.productId.uuid
+    #    self.userId = self.userId.id
+    #    super(InstallationData, self).save(*args, **kwargs)  # Call the "real" save() method.

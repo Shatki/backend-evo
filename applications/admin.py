@@ -28,7 +28,6 @@ class InstallationAdmin(admin.ModelAdmin):
         'timestamp',
         'version',
         'type',
-        'data',
     )
 
     ordering = (
@@ -81,10 +80,11 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 
 @admin.register(InstallationData)
-class InstallationAdmin(admin.ModelAdmin):
+class InstallationDataAdmin(admin.ModelAdmin):
     model = InstallationData
 
     list_display = (
+        'installation',
         'productId',
         'userId',
     )
