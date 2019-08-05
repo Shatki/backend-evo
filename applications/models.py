@@ -138,9 +138,11 @@ class InstallationData(models.Model):
                                      default=None, on_delete=models.CASCADE,)
 
     def __str__(self):
-        return u'{}: {}, {}'.format(self.installation, self.userId, self.productId)
+        return u'{}: {}, {}'.format(self.installation, self.userId, self.productId).encode('utf-8')
 
-    # def save(self, *args, **kwargs):
-    #    self.productId = self.productId.uuid
-    #    self.userId = self.userId.id
-    #    super(InstallationData, self).save(*args, **kwargs)  # Call the "real" save() method.
+    def save(self, *args, **kwargs):
+        print self.productId, self.userId.userId, self.installation.id
+        # self.productId = self.productId.uuid
+        # self.userId = self.userId.userId
+        # self.installation = self.installation.id
+        super(InstallationData, self).save(*args, **kwargs)  # Call the "real" save() method.
