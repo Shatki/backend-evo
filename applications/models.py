@@ -21,8 +21,11 @@ class Application(models.Model):
     version = models.DecimalField(verbose_name=u'версия приложения', null=False, max_digits=4,
                                   decimal_places=2, default=0.1)
 
+    def __unicode__(self):
+        return str(self.uuid)
+
     def __str__(self):
-        return self.name.encode('utf-8')
+        return str(self.uuid)
 
     def save(self, *args, **kwargs):
         self.name = self.name.encode('utf-8')
@@ -89,15 +92,18 @@ class Subscription(models.Model):
     # "deviceNumber": 35
     deviceNumber = models.IntegerField(u'количество оплаченных устройств', default=1)
 
+    def __unicode__(self):
+        return str(self.subscriptionId)
+
     def __str__(self):
         return str(self.subscriptionId)
 
 
-class Installation(models.Model):
+class InstallationEvent(models.Model):
     class Meta:
-        verbose_name = u'установка приложения'
-        verbose_name_plural = u'установка приложений'
-        db_table = u'installations'
+        verbose_name = u'событие установки приложения'
+        verbose_name_plural = u'события установки приложений'
+        db_table = u'installation_events'
 
     # Идентификатор события.
     # "id": "a99fbf70-6307-4acc-b61c-741ee9eef6c0"
@@ -120,29 +126,40 @@ class Installation(models.Model):
     type = models.CharField(verbose_name=u'тип события', max_length=40, choices=APPLICATION_EVENT_TYPES,
                             default=APPLICATION_EVENT_DEFAULT)
 
+    def __unicode__(self):
+        return u'{} {} [{}]'.format(self.timestamp, self.id, self.type)
+
     def __str__(self):
-        return u'{}[{}]'.format(self.id, self.type)
+        return u'{} {} [{}]'.format(self.timestamp, self.id, self.type)
 
 
-class InstallationData(models.Model):
+class Installation(models.Model):
     class Meta:
-        verbose_name = u'установочные данные'
-        verbose_name_plural = u'установочные данные'
-        db_table = u'installations_data'
+        verbose_name = u'установка приложения'
+        verbose_name_plural = u'установка приложений'
+        db_table = u'installations'
 
+    # Идентификатор приложения в Облаке Эвотор.
+    # regex /^[0-9]{2}-[0-9]{15}$/
+    # "productId": "string",
     productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения Эвотор',
                                   default=uuid.uuid4, db_column='product_id',)
+    # Идентификатор пользователя в Облаке Эвотор.
     userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор',
-                               default=DEFAULT_USER_ID, db_column='user_id')
-    installation = models.ForeignKey(Installation, verbose_name=u'служебная информация',
-                                     default=None, on_delete=models.CASCADE,)
+                               default=DEFAULT_USER_ID, db_column='user_id', null=False)
+    # Событие инсталляции
+    installation = models.ForeignKey(InstallationEvent, verbose_name=u'дата и uuid события [событие]',
+                                     default=None, on_delete=models.CASCADE, null=False)
+
+    def __unicode__(self):
+        return u'{}: {}, {}'.format(self.installation, self.userId, self.productId)
 
     def __str__(self):
-        return u'{}: {}, {}'.format(self.installation, self.userId, self.productId).encode('utf-8')
+        return u'{}: {}, {}'.format(self.installation, self.userId, self.productId)
 
-    def save(self, *args, **kwargs):
-        print self.productId, self.userId.userId, self.installation.id
-        # self.productId = self.productId.uuid
-        # self.userId = self.userId.userId
-        # self.installation = self.installation.id
-        super(InstallationData, self).save(*args, **kwargs)  # Call the "real" save() method.
+    # def save(self, *args, **kwargs):
+    #    print self.productId, self.userId.userId, self.installation.id
+    #    # self.productId = self.productId.uuid
+    #    # self.userId = self.userId.userId
+    #    # self.installation = self.installation.id
+    #    super(Installation, self).save(*args, **kwargs)  # Call the "real" save() method.

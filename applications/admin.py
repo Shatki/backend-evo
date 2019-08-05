@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.contrib import admin
-from .models import Subscription, Application, Installation, InstallationData
+from .models import Subscription, Application, InstallationEvent, Installation
 
 
 # Register your models here.
@@ -19,9 +19,9 @@ class ApplicationAdmin(admin.ModelAdmin):
         'name',)
 
 
-@admin.register(Installation)
-class InstallationAdmin(admin.ModelAdmin):
-    model = Installation
+@admin.register(InstallationEvent)
+class InstallationEventAdmin(admin.ModelAdmin):
+    model = InstallationEvent
 
     list_display = (
         'id',
@@ -79,9 +79,9 @@ class SubscriptionAdmin(admin.ModelAdmin):
         'timestamp',)
 
 
-@admin.register(InstallationData)
+@admin.register(Installation)
 class InstallationDataAdmin(admin.ModelAdmin):
-    model = InstallationData
+    model = Installation
 
     list_display = (
         'installation',

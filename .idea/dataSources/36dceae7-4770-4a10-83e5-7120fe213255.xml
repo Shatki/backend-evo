@@ -21,8 +21,8 @@
     <table id="13" parent="2" name="django_content_type"/>
     <table id="14" parent="2" name="django_migrations"/>
     <table id="15" parent="2" name="django_session"/>
-    <table id="16" parent="2" name="installations"/>
-    <table id="17" parent="2" name="installations_data"/>
+    <table id="16" parent="2" name="installation_events"/>
+    <table id="17" parent="2" name="installations"/>
     <table id="18" parent="2" name="products"/>
     <table id="19" parent="2" name="products_barCodes"/>
     <table id="20" parent="2" name="sqlite_master">
@@ -400,7 +400,7 @@ model</ColNames>
       <DataType>varchar(40)|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="100" parent="16" name="sqlite_autoindex_installations_1">
+    <index id="100" parent="16" name="sqlite_autoindex_installation_events_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>id</ColNames>
       <ColumnCollations></ColumnCollations>
@@ -409,7 +409,7 @@ model</ColNames>
     <key id="101" parent="16">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_installations_1</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_installation_events_1</UnderlyingIndexName>
     </key>
     <column id="102" parent="17" name="id">
       <Position>1</Position>
@@ -417,12 +417,12 @@ model</ColNames>
       <NotNull>1</NotNull>
       <SequenceIdentity>1</SequenceIdentity>
     </column>
-    <column id="103" parent="17" name="product_id">
+    <column id="103" parent="17" name="installation_id">
       <Position>2</Position>
       <DataType>char(32)|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="104" parent="17" name="installation_id">
+    <column id="104" parent="17" name="product_id">
       <Position>3</Position>
       <DataType>char(32)|0s</DataType>
       <NotNull>1</NotNull>
@@ -432,15 +432,15 @@ model</ColNames>
       <DataType>bigint|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="106" parent="17" name="installations_data_product_id_1b4e789b">
-      <ColNames>product_id</ColNames>
-      <ColumnCollations></ColumnCollations>
-    </index>
-    <index id="107" parent="17" name="installations_data_installation_id_29a8d0a1">
+    <index id="106" parent="17" name="installations_installation_id_bdfecf39">
       <ColNames>installation_id</ColNames>
       <ColumnCollations></ColumnCollations>
     </index>
-    <index id="108" parent="17" name="installations_data_user_id_68c699cc">
+    <index id="107" parent="17" name="installations_product_id_d319e674">
+      <ColNames>product_id</ColNames>
+      <ColumnCollations></ColumnCollations>
+    </index>
+    <index id="108" parent="17" name="installations_user_id_8cc895b6">
       <ColNames>user_id</ColNames>
       <ColumnCollations></ColumnCollations>
     </index>
@@ -449,14 +449,14 @@ model</ColNames>
       <Primary>1</Primary>
     </key>
     <foreign-key id="110" parent="17">
+      <ColNames>installation_id</ColNames>
+      <RefTableName>installation_events</RefTableName>
+      <RefColNames>id</RefColNames>
+    </foreign-key>
+    <foreign-key id="111" parent="17">
       <ColNames>product_id</ColNames>
       <RefTableName>applications</RefTableName>
       <RefColNames>uuid</RefColNames>
-    </foreign-key>
-    <foreign-key id="111" parent="17">
-      <ColNames>installation_id</ColNames>
-      <RefTableName>installations</RefTableName>
-      <RefColNames>id</RefColNames>
     </foreign-key>
     <foreign-key id="112" parent="17">
       <ColNames>user_id</ColNames>

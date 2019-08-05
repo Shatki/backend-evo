@@ -4,7 +4,7 @@ from users.models import User
 from applications.models import Subscription
 from stores.models import Store
 from products.models import Product
-from applications.models import Application, Installation, InstallationData
+from applications.models import Application, InstallationEvent, Installation
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -43,13 +43,11 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 class InstallationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Installation
+        model = InstallationEvent
         fields = ['id', 'timestamp', 'version', 'type', 'data', ]
 
 
 class InstallationDataSerializer(serializers.ModelSerializer):
     class Meta:
-        model = InstallationData
+        model = Installation
         fields = ['productId', 'userId', ]
-
-

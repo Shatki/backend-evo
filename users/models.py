@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from evotor.validators import login, email
 
@@ -37,11 +37,11 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['email', ]
 
     def __unicode__(self):
-        user_id = (('00-000000000000000' + str(self.userId))[-18:])
+        user_id = (('00-000000000000000' + str(self.userId))[-17:])
         return u'{}-{}'.format(user_id[0:2], user_id[2:18])
 
     def __str__(self):
-        user_id = (('00-000000000000000' + str(self.userId))[-18:])
+        user_id = (('00-000000000000000' + str(self.userId))[-17:])
         return u'{}-{}'.format(user_id[0:2], user_id[2:18])
 
     def get_full_name(self):
@@ -56,4 +56,3 @@ class User(AbstractUser):
 
     def has_perm(self, perm, obj=None):
         return True
-

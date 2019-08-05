@@ -2,7 +2,9 @@
   <dictionary name="imacdima">
     <words>
       <w>addons</w>
+      <w>authtoken</w>
       <w>corsheaders</w>
+      <w>evotorservice</w>
     </words>
   </dictionary>
 </component>
