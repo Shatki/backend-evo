@@ -20,6 +20,10 @@ from . import views
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet, basename='User')
+
+router.register(r'installations', views.InstallationViewSet, basename='Installations')
+router.register(r'installation/event', views.InstallationEventViewSet, basename='InstallationEvent')
+
 router.register(r'subscriptions', views.SubscriptionViewSet, basename='Subscription')
 router.register(r'subscription/event', views.SubscriptionEventViewSet, basename='SubscriptionEvent')
 #router.register(r'groups', views.GroupViewSet)

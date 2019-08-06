@@ -11,7 +11,7 @@ from rest_framework.settings import api_settings
 
 from api import serializers
 from users.models import User
-from applications.models import Subscription
+from applications.models import Subscription, InstallationEvent, Installation
 from stores.models import Store
 
 
@@ -185,3 +185,44 @@ class StoreViewSet(viewsets.ViewSet):
         store = self.get_object(uuid)
         store.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@permission_classes((permissions.AllowAny,))
+class InstallationViewSet(viewsets.ViewSet):
+    """
+           Журнал событий установки и удаления приложений
+    """
+    def list(self, request):
+        stores = InstallationEvent.objects.all()
+        serializer = serializers.InstallationEventSerializer(stores, many=True)
+        return Response(serializer.data)
+
+
+@permission_classes((permissions.AllowAny,))
+# Create your views here.
+class InstallationEventViewSet(viewsets.ViewSet):
+    """
+           События установки и удаления приложений
+
+           Связанные с установкой и удалением приложения события, которые облако Эвотор передаёт в сторонний сервис
+    """
+    # permission_classes = [permissions.IsAdminUser]
+
+    def create(self, request):
+        # Ищем установленное приложение или создаем об это запись в базе
+        installation_event = request.data
+        installation_data = installation_event.data
+
+        #try:
+        #    data = Installation.objects.get(id=request.data.get('data.installation'))
+        #except User.DoesNotExist:
+        #    return Response(status=status.HTTP_404_NOT_FOUND, )
+        #subscription['userId'] = user.id
+
+        serializer = serializers.InstallationEventSerializer(data=installation_event)
+        #serializer_data = serializers.Installation(data=data)
+
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)

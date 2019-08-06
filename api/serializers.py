@@ -43,11 +43,18 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 class InstallationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = InstallationEvent
-        fields = ['id', 'timestamp', 'version', 'type', 'data', ]
-
-
-class InstallationDataSerializer(serializers.ModelSerializer):
-    class Meta:
         model = Installation
         fields = ['productId', 'userId', ]
+
+
+class InstallationEventSerializer(serializers.ModelSerializer):
+    data = InstallationSerializer()
+
+    class Meta:
+        model = InstallationEvent
+        fields = ['id', 'timestamp', 'version', 'type', 'data']
+
+
+
+
+

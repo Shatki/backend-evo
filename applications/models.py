@@ -35,7 +35,7 @@ class Application(models.Model):
 class Subscription(models.Model):
     class Meta:
         verbose_name = u'подписка на приложение'
-        verbose_name_plural = u'подписки на приложение'
+        verbose_name_plural = u'журнал подписок на приложение'
         db_table = u'subscriptions'
 
     # Идентификатор подписки.
@@ -102,12 +102,12 @@ class Subscription(models.Model):
 class InstallationEvent(models.Model):
     class Meta:
         verbose_name = u'событие установки приложения'
-        verbose_name_plural = u'события установки приложений'
+        verbose_name_plural = u'журнал событий установок приложений'
         db_table = u'installation_events'
 
     # Идентификатор события.
     # "id": "a99fbf70-6307-4acc-b61c-741ee9eef6c0"
-    id = models.UUIDField(verbose_name=u'идентификатор подписки', primary_key=True,
+    id = models.UUIDField(verbose_name=u'идентификатор события', primary_key=True,
                           default=uuid.uuid4, null=False)
 
     # Дата и время отправки события, в миллисекундах. В формате unix timestamp.
@@ -135,8 +135,8 @@ class InstallationEvent(models.Model):
 
 class Installation(models.Model):
     class Meta:
-        verbose_name = u'установка приложения'
-        verbose_name_plural = u'установка приложений'
+        verbose_name = u'установленное приложение'
+        verbose_name_plural = u'установленные приложения'
         db_table = u'installations'
 
     # Идентификатор приложения в Облаке Эвотор.
@@ -148,7 +148,7 @@ class Installation(models.Model):
     userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор',
                                default=DEFAULT_USER_ID, db_column='user_id', null=False)
     # Событие инсталляции
-    installation = models.ForeignKey(InstallationEvent, verbose_name=u'дата и uuid события [событие]',
+    installation = models.ForeignKey(InstallationEvent, verbose_name=u'дата и идентификатор события [событие]',
                                      default=None, on_delete=models.CASCADE, null=False)
 
     def __unicode__(self):
