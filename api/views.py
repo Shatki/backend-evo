@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.http import Http404
+import time
 
 from rest_framework.decorators import permission_classes
+from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework import permissions
@@ -206,23 +208,23 @@ class InstallationEventViewSet(viewsets.ViewSet):
 
            Связанные с установкой и удалением приложения события, которые облако Эвотор передаёт в сторонний сервис
     """
+    # parser_classes = (JSONParser,)
     # permission_classes = [permissions.IsAdminUser]
 
     def create(self, request):
         # Ищем установленное приложение или создаем об это запись в базе
-        installation_event = request.data
-        installation_data = installation_event.data
-
-        #try:
-        #    data = Installation.objects.get(id=request.data.get('data.installation'))
-        #except User.DoesNotExist:
-        #    return Response(status=status.HTTP_404_NOT_FOUND, )
-        #subscription['userId'] = user.id
-
-        serializer = serializers.InstallationEventSerializer(data=installation_event)
-        #serializer_data = serializers.Installation(data=data)
+        query = request.data
+        # Перевод данных userId из "01-000000000000001" в "1000000000000001"
+        query['data']['userId'] = query['data']['userId'][1:2] + query['data']['userId'][3:18]
+        # installation_data = installation_event.get('data')
+        # print installation_data
+        serializer = serializers.InstallationEventSerializer(data=query)
 
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+    def perform_create(self, serializer):
+        # The request user is set as author automatically.
+        serializer.save(data=self.request.data)

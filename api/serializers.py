@@ -52,9 +52,27 @@ class InstallationEventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InstallationEvent
-        fields = ['id', 'timestamp', 'version', 'type', 'data']
+        fields = ['id', 'timestamp', 'version', 'type', 'data', ]
+
+    def create(self, validated_data):
+        data = validated_data.pop('data')
+        installation = Installation.objects.create(**validated_data)
+        for element in data:
+            Installation.objects.create(installation=installation, **element)
+        return installation
 
 
 
+"""
+{
+  "id": "a99fbf70-6307-4acc-b61c-741ee9eef6c0",
+  "timestamp": 1565157120,
+  "version": 2,
+  "type": "ApplicationInstalled",
+  "data": {
+    "productId": "569af313-5fcf-43b4-9eb4-f81e8f17dac7",
+    "userId": "01-000000000000001"
+  }
+}
 
-
+"""

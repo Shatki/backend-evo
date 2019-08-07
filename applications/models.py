@@ -160,6 +160,6 @@ class Installation(models.Model):
     # def save(self, *args, **kwargs):
     #    print self.productId, self.userId.userId, self.installation.id
     #    # self.productId = self.productId.uuid
-    #    # self.userId = self.userId.userId
+    #    self.userId = self.userId
     #    # self.installation = self.installation.id
     #    super(Installation, self).save(*args, **kwargs)  # Call the "real" save() method.
