@@ -62,11 +62,10 @@ class InstallationEventSerializer(serializers.ModelSerializer):
         return installation
 
 
-
 """
 {
   "id": "a99fbf70-6307-4acc-b61c-741ee9eef6c0",
-  "timestamp": 1565157120,
+  "timestamp": 15651571200000,
   "version": 2,
   "type": "ApplicationInstalled",
   "data": {

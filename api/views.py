@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.http import Http404
-import time
+from datetime import datetime
 
 from rest_framework.decorators import permission_classes
 from rest_framework.parsers import JSONParser
@@ -18,7 +18,6 @@ from stores.models import Store
 
 
 @permission_classes((permissions.IsAuthenticatedOrReadOnly,))
-# Create your views here.
 class UserViewSet(viewsets.ViewSet):
     """
             Просмотр пользователей
@@ -57,7 +56,6 @@ class UserViewSet(viewsets.ViewSet):
 
 
 @permission_classes((permissions.IsAuthenticatedOrReadOnly,))
-# Create your views here.
 class SubscriptionViewSet(viewsets.ViewSet):
     """
             Просмотр пользователей
@@ -97,7 +95,6 @@ class SubscriptionViewSet(viewsets.ViewSet):
 
 
 @permission_classes((permissions.AllowAny,))
-# Create your views here.
 class SubscriptionEventViewSet(viewsets.ViewSet):
     """
             События подписки
@@ -216,6 +213,9 @@ class InstallationEventViewSet(viewsets.ViewSet):
         query = request.data
         # Перевод данных userId из "01-000000000000001" в "1000000000000001"
         query['data']['userId'] = query['data']['userId'][1:2] + query['data']['userId'][3:18]
+        # Переводим из Timestamp
+        # query['timestamp'] = datetime.fromtimestamp(query['timestamp'])
+
         # installation_data = installation_event.get('data')
         # print installation_data
         serializer = serializers.InstallationEventSerializer(data=query)

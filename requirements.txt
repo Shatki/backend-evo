@@ -7,3 +7,4 @@ django-rest-auth
 Pillow
 django-ckeditor
 django-cors-headers==2.5.2
+django-unixdatetimefield

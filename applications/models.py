@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from datetime import datetime
+from django_unixdatetimefield import UnixDateTimeField
+
 import uuid
 from django.db import models
 from users.models import User
@@ -55,7 +58,7 @@ class Subscription(models.Model):
 
     # Дата и время отправки события. В соответствовии с ISO 8601.
     # "timestamp": "2017-04-20T18:26:37.753+0000",
-    timestamp = models.DateTimeField(verbose_name=u'дата и время отправки события')
+    timestamp = UnixDateTimeField(verbose_name=u'дата и время отправки события')
 
     # Номер события в последовательности. Номер непрерывно возрастает начиная с единицы.
     # Необходим для соблюдения порядка обработки событий.
@@ -112,7 +115,7 @@ class InstallationEvent(models.Model):
 
     # Дата и время отправки события, в миллисекундах. В формате unix timestamp.
     # "timestamp": 1504168645290
-    timestamp = models.DateTimeField(verbose_name=u'дата и время отправки события')
+    timestamp = UnixDateTimeField(verbose_name=u'дата и время отправки события')
 
     # Версия API, к которой относятся события.
     # "version": 2
