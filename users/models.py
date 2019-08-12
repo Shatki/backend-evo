@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from evotor.db import UserIdField, DEFAULT_USERID
 from evotor.validators import login, email
 
 
@@ -13,8 +14,8 @@ class User(AbstractUser):
         db_table = u'users'
 
     # Идентификатор пользователя. 18 символов
-    userId = models.BigIntegerField(verbose_name=u'идентификатор пользователя ', primary_key=True,
-                                    default=10000000000000001, editable=True, unique=True, null=False)
+    userId = UserIdField(verbose_name=u'идентификатор пользователя ', primary_key=True,
+                         default=DEFAULT_USERID, editable=True, unique=True, null=False)
     # Имя логина авторизации
     username = models.CharField(verbose_name=u'имя пользователя в системе', unique=True, max_length=30, db_index=True,
                                 validators=[login])
@@ -37,12 +38,10 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['email', ]
 
     def __unicode__(self):
-        user_id = (('00-000000000000000' + str(self.userId))[-17:])
-        return u'{}-{}'.format(user_id[0:2], user_id[2:18])
+        return self.userId
 
     def __str__(self):
-        user_id = (('00-000000000000000' + str(self.userId))[-17:])
-        return u'{}-{}'.format(user_id[0:2], user_id[2:18])
+        return self.userId
 
     def get_full_name(self):
         return u'{} {}'.format(self.first_name, self.last_name)

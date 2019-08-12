@@ -8,7 +8,7 @@ from django.db import models
 from users.models import User
 from .constants import SUBSCRIPTION_TYPES, SUBSCRIPTION_TYPE_DEFAULT
 from .constants import APPLICATION_EVENT_DEFAULT, APPLICATION_EVENT_TYPES
-from evotor.api_settings import DEFAULT_USER_ID
+from evotor.db import DEFAULT_USERID
 
 
 class Application(models.Model):
@@ -149,7 +149,7 @@ class Installation(models.Model):
                                   default=uuid.uuid4, db_column='product_id',)
     # Идентификатор пользователя в Облаке Эвотор.
     userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор',
-                               default=DEFAULT_USER_ID, db_column='user_id', null=False)
+                               default=DEFAULT_USERID, db_column='user_id', null=False)
     # Событие инсталляции
     installation = models.ForeignKey(InstallationEvent, verbose_name=u'дата и идентификатор события [событие]',
                                      default=None, on_delete=models.CASCADE, null=False)
