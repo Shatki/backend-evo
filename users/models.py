@@ -3,8 +3,9 @@ from __future__ import unicode_literals
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from evotor.db import UserIdField, DEFAULT_USERID
+from evotor.db import UserIdField
 from evotor.validators import login, email
+from evotor.db import DEFAULT_USERID
 
 
 class User(AbstractUser):
