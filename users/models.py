@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from evotor.db import UserIdField
 from evotor.validators import login, email
-from evotor.db import DEFAULT_USERID
+from evotor.db import UserId
 
 
 class User(AbstractUser):
@@ -16,7 +16,7 @@ class User(AbstractUser):
 
     # Идентификатор пользователя. 18 символов
     userId = UserIdField(verbose_name=u'идентификатор пользователя ', primary_key=True,
-                         default=DEFAULT_USERID, editable=True, unique=True, null=False)
+                         default=UserId.DEFAULT_USERID, unique=True, null=False)
     # Имя логина авторизации
     username = models.CharField(verbose_name=u'имя пользователя в системе', unique=True, max_length=30, db_index=True,
                                 validators=[login])
@@ -51,7 +51,6 @@ class User(AbstractUser):
         return self.first_name
 
     # def save(self, *args, **kwargs):
-    #     self.userId = self.userId.encode('utf-8')
     #     super(User, self).save(*args, **kwargs)  # Call the "real" save() method.
 
     def has_perm(self, perm, obj=None):

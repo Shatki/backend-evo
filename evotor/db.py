@@ -2,6 +2,7 @@
 import django.db.models as models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.core import exceptions
 
 import re
 
@@ -12,13 +13,13 @@ class UserId(object):
     """
     DEFAULT_USERID = '01-0000000000000001'
     DEFAULT_MASK = '00-000000000000000'
-    PATTERN_USERID = r'[0-9]{2}-[0-9]{15}'
+    REGEX_USERID = r'[0-9]{2}-[0-9]{15}'
     SEPARATOR_CONST = '-'
     MAX_NODE = 10**2
     MAX_NUMBER = 10**15
     MAX_INT = MAX_NODE * MAX_NUMBER
 
-    def __init__(self, str=None, int=None, fields=None,):
+    def __init__(self, str=None, int=None, fields=None):
         """
             Создаем UserID
             Примеры:
@@ -83,6 +84,12 @@ class UserId(object):
     def __int__(self):
         return self.int
 
+    def __getstate__(self):
+        return {'int': self.int}
+
+    def __setstate__(self, state):
+        object.__setattr__(self, 'int', state['int'])
+
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, str(self))
 
@@ -111,22 +118,20 @@ class UserIdField(models.Field):
     PATTERN_USERID = r'[0-9]{2}-[0-9]{15}'
     SEPARATOR_CONST = '-'
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, verbose_name=None, **kwargs):
         kwargs['max_length'] = 18
-        super(UserIdField, self).__init__(*args, **kwargs)
+        super(UserIdField, self).__init__(verbose_name, **kwargs)
+        # super(UserIdField, self).__init__(*args, **kwargs)
 
     def deconstruct(self):
-        print 'deconstruct'
         name, path, args, kwargs = super(UserIdField, self).deconstruct()
         del kwargs["max_length"]
         return name, path, args, kwargs
 
     def get_internal_type(self):
-        print 'get_internal_type'
         return 'UserIdField'
 
     def get_prep_value(self, value):
-        print 'get_prep_value: ', value
         value = super(UserIdField, self).get_prep_value(value)
         if value is None:
             return None
@@ -137,50 +142,43 @@ class UserIdField(models.Field):
         """
             Convert value to db UserId BigInteger before save
         """
-        # Преобразует val в значение для бэкенда базы данных. По умолчанию возвращает value,
+        # Преобразует value в значение для бэкенда базы данных. По умолчанию возвращает value,
         # если prepared=True, иначе – результат get_prep_value()
-        print 'get_db_prep_value: ', value
         if value is None:
             return None
-        if re.match(self.PATTERN_USERID, value) and len(value) == 18:
-            # Возвращаем значения в базу
-            return value.replace('-', "").lstrip('0')
+        if not isinstance(value, UserId):
+            value = self.to_python(value)
         return str(value)
 
-    def to_python(self, val):
+    def to_python(self, value):
         """
             Convert the input database BigIntenger value into python string, raises
             django.core.exceptions.ValidationError if the data can't be converted.
         """
-        print 'to_python: ', val, type(val)
         # Преобразует значение из базы данных (или сериалайзера) в объект Python.
         # Метод обратный get_prep_value() - подготавливает значение для поля для вставки в базу данных.
         #
         # По умолчанию возвращает value, что обычно подходит, если бэкенд уже возвращает правильный объект Python.
-
-        if isinstance(val, int):
-            user_id = ((self.DEFAULT_MASK + str(val))[-17:])
-            return u'{}-{}'.format(user_id[0:2], user_id[2:18])
-        # Если что-то иное
-        else:
-            raise ValidationError(u'Unknown DB data format value')
+        if value is not None and not isinstance(value, UserId):
+            input_form = 'int' if isinstance(value, int) else 'str'
+            try:
+                return UserId(**{input_form: value})
+            except (AttributeError, ValueError):
+                raise exceptions.ValidationError(
+                    self.error_messages['invalid'],
+                    code='invalid',
+                    params={'value': value},
+                )
+        return value
 
     def value_to_string(self, obj):
         # Преобразование значения поля для сериалайзера
-        print 'value_to_string: ', obj, self.get_val_from_obj(obj)
+        # print 'value_to_string: ', obj, self.get_val_from_obj(obj)
         # obj: 01-000000000738894 <class 'users.models.User'>
         # val: 01-000000000738894 <type 'unicode'>
         # Преобразование в читаемую форму
         return str(self.value_from_object(obj))
 
     def from_db_value(self, val, *args, **kwargs):
-        print 'from_db_value: ', val, self.to_python(val)
         # Преобразование значений базы данных в объекты Python
         return self.to_python(val)
-
-
-print UserId(fields=(1, 12345))
-print UserId(str='01-000000000023456')
-print UserId(int=1000000000034567)
-
-print UserId.fields
