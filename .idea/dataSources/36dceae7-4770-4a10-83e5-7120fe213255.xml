@@ -417,31 +417,31 @@ model</ColNames>
       <NotNull>1</NotNull>
       <SequenceIdentity>1</SequenceIdentity>
     </column>
-    <column id="103" parent="17" name="product_id">
+    <column id="103" parent="17" name="installation_id">
       <Position>2</Position>
       <DataType>char(32)|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="104" parent="17" name="user_id">
+    <column id="104" parent="17" name="product_id">
       <Position>3</Position>
-      <DataType>bigint|0s</DataType>
-      <NotNull>1</NotNull>
-    </column>
-    <column id="105" parent="17" name="installation_id">
-      <Position>4</Position>
       <DataType>char(32)|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="106" parent="17" name="installations_product_id_d319e674">
+    <column id="105" parent="17" name="user_id">
+      <Position>4</Position>
+      <DataType>bigint|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <index id="106" parent="17" name="installations_installation_id_bdfecf39">
+      <ColNames>installation_id</ColNames>
+      <ColumnCollations></ColumnCollations>
+    </index>
+    <index id="107" parent="17" name="installations_product_id_d319e674">
       <ColNames>product_id</ColNames>
       <ColumnCollations></ColumnCollations>
     </index>
-    <index id="107" parent="17" name="installations_user_id_8cc895b6">
+    <index id="108" parent="17" name="installations_user_id_8cc895b6">
       <ColNames>user_id</ColNames>
-      <ColumnCollations></ColumnCollations>
-    </index>
-    <index id="108" parent="17" name="installations_installation_id_bdfecf39">
-      <ColNames>installation_id</ColNames>
       <ColumnCollations></ColumnCollations>
     </index>
     <key id="109" parent="17">
@@ -449,19 +449,19 @@ model</ColNames>
       <Primary>1</Primary>
     </key>
     <foreign-key id="110" parent="17">
+      <ColNames>installation_id</ColNames>
+      <RefTableName>installation_events</RefTableName>
+      <RefColNames>id</RefColNames>
+    </foreign-key>
+    <foreign-key id="111" parent="17">
       <ColNames>product_id</ColNames>
       <RefTableName>applications</RefTableName>
       <RefColNames>uuid</RefColNames>
     </foreign-key>
-    <foreign-key id="111" parent="17">
+    <foreign-key id="112" parent="17">
       <ColNames>user_id</ColNames>
       <RefTableName>users</RefTableName>
       <RefColNames>userId</RefColNames>
-    </foreign-key>
-    <foreign-key id="112" parent="17">
-      <ColNames>installation_id</ColNames>
-      <RefTableName>installation_events</RefTableName>
-      <RefColNames>id</RefColNames>
     </foreign-key>
     <column id="113" parent="18" name="uuid">
       <Position>1</Position>
@@ -781,7 +781,7 @@ barcode_id</ColNames>
     </column>
     <column id="180" parent="24" name="userId">
       <Position>13</Position>
-      <DataType>bigint|0s</DataType>
+      <DataType>integer unsigned|0s</DataType>
       <NotNull>1</NotNull>
     </column>
     <index id="181" parent="24" name="sqlite_autoindex_users_1">

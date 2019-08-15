@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 import django.db.models as models
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from django.core import exceptions
-
-import re
+from django.core import checks, exceptions, validators
 
 
 class UserId(object):
@@ -118,17 +115,33 @@ class UserIdField(models.Field):
     PATTERN_USERID = r'[0-9]{2}-[0-9]{15}'
     SEPARATOR_CONST = '-'
 
-    def __init__(self, verbose_name=None, **kwargs):
+    def __init__(self, *args, **kwargs):
+        kwargs['blank'] = True
         kwargs['max_length'] = 18
-        super(UserIdField, self).__init__(verbose_name, **kwargs)
-        # super(UserIdField, self).__init__(*args, **kwargs)
+        super(UserIdField, self).__init__(*args, **kwargs)
+
+    def _check_primary_key(self):
+        if not self.primary_key:
+            return [
+                checks.Error(
+                    'AutoFields must set primary_key=True.',
+                    obj=self,
+                    id='fields.E100',
+                ),
+            ]
+        else:
+            return []
 
     def deconstruct(self):
         name, path, args, kwargs = super(UserIdField, self).deconstruct()
-        del kwargs["max_length"]
+        kwargs['primary_key'] = True
+        del kwargs["max_length"], kwargs['blank']
         return name, path, args, kwargs
 
     def get_internal_type(self):
+        return 'UserIdField'
+
+    def db_type(self, connection):
         return 'UserIdField'
 
     def get_prep_value(self, value):
@@ -148,7 +161,7 @@ class UserIdField(models.Field):
             return None
         if not isinstance(value, UserId):
             value = self.to_python(value)
-        return str(value)
+        return value.__int__()
 
     def to_python(self, value):
         """
