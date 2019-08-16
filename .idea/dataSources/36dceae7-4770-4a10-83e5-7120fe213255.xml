@@ -781,7 +781,7 @@ barcode_id</ColNames>
     </column>
     <column id="180" parent="24" name="userId">
       <Position>13</Position>
-      <DataType>integer unsigned|0s</DataType>
+      <DataType>bigint|0s</DataType>
       <NotNull>1</NotNull>
     </column>
     <index id="181" parent="24" name="sqlite_autoindex_users_1">

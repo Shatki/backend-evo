@@ -212,7 +212,7 @@ class InstallationEventViewSet(viewsets.ViewSet):
         # Ищем установленное приложение или создаем об это запись в базе
         query = request.data
         # Перевод данных userId из "01-000000000000001" в "1000000000000001"
-        query['data']['userId'] = query['data']['userId'][1:2] + query['data']['userId'][3:18]
+        # query['data']['userId'] = query['data']['userId'][1:2] + query['data']['userId'][3:18]
         # Переводим из Timestamp
         # query['timestamp'] = datetime.fromtimestamp(query['timestamp'])
 
