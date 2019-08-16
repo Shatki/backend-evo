@@ -178,12 +178,10 @@ class UserIdField(models.Field):
         # Преобразует value в значение для бэкенда базы данных. По умолчанию возвращает value,
         # если prepared=True, иначе – результат get_prep_value()
         value = super(UserIdField, self).get_db_prep_value(value, connection, prepared)
-        print value, type(value)
         if value is None:
             return None
         if not isinstance(value, UserId):
             value = self.to_python(value)
-        print value.get_int
         return value.get_int
 
     def to_python(self, value):
