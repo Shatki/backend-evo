@@ -35,6 +35,7 @@ class UserAdmin(UserAdmin):
         (None, {
             'fields': (
                 'username',
+                'email',
                 'password',
                 'userId',
             )
@@ -69,8 +70,11 @@ class UserAdmin(UserAdmin):
             'classes':
                 ('wide',),
             'fields': (
+                'username',
+                'userId',
                 'email',
-                'password',
+                'password1',
+                'password2',
                 'is_admin',
             )
         }),
@@ -86,4 +90,3 @@ class UserAdmin(UserAdmin):
         'groups',
         'user_permissions',
     )
-

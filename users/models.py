@@ -16,7 +16,7 @@ class User(AbstractUser):
 
     # Идентификатор пользователя. 18 символов
     userId = UserIdField(verbose_name=u'идентификатор пользователя ', primary_key=True,
-                         default=UserId.DEFAULT_USERID, unique=True, null=False)
+                         unique=True, null=False)
     # Имя логина авторизации
     username = models.CharField(verbose_name=u'имя пользователя в системе', unique=True, max_length=30, db_index=True,
                                 validators=[login])
@@ -36,19 +36,19 @@ class User(AbstractUser):
     # логинимся
     USERNAME_FIELD = 'username'
     # обязательное поле
-    REQUIRED_FIELDS = ['email', ]
+    REQUIRED_FIELDS = ['email', 'userId',]
 
     def __unicode__(self):
         return u'%s' % self.userId
 
     def __str__(self):
-        return self.userId
+        return u'%s' % self.userId
 
     def get_full_name(self):
         return u'{} {}'.format(self.first_name, self.last_name)
 
     def get_short_name(self):
-        return self.first_name
+        return u'%s' % self.first_name
 
     # def save(self, *args, **kwargs):
     #     super(User, self).save(*args, **kwargs)  # Call the "real" save() method.
