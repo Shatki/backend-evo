@@ -48,18 +48,22 @@ class InstallationSerializer(serializers.ModelSerializer):
 
 
 class InstallationEventSerializer(serializers.ModelSerializer):
-    data = InstallationSerializer()
+    data = InstallationSerializer(read_only=True)
 
     class Meta:
         model = InstallationEvent
+        depth = 2
         fields = ['id', 'timestamp', 'version', 'type', 'data', ]
 
-    def create(self, validated_data):
-        data = validated_data.pop('data')
-        installation = Installation.objects.create(**validated_data)
-        for element in data:
-            Installation.objects.create(installation=installation, **element)
-        return installation
+    def create(self, data):
+        print '<v', data, 'v>'
+        installation_data = data.pop('data')
+        installation_event = InstallationEvent.objects.create(**data)
+        print '<', installation_data, '|||', data, '>'
+        for _data in installation_data:
+            print '<!', _data, '!>'
+            Installation.objects.create(installationId=installation_event, **_data)
+        return installation_event
 
 
 """

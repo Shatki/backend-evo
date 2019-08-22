@@ -192,8 +192,8 @@ class InstallationViewSet(viewsets.ViewSet):
            Журнал событий установки и удаления приложений
     """
     def list(self, request):
-        stores = InstallationEvent.objects.all()
-        serializer = serializers.InstallationEventSerializer(stores, many=True)
+        installations = InstallationEvent.objects.all()
+        serializer = serializers.InstallationEventSerializer(installations, many=True)
         return Response(serializer.data)
 
 
@@ -202,7 +202,6 @@ class InstallationViewSet(viewsets.ViewSet):
 class InstallationEventViewSet(viewsets.ViewSet):
     """
            События установки и удаления приложений
-
            Связанные с установкой и удалением приложения события, которые облако Эвотор передаёт в сторонний сервис
     """
     # parser_classes = (JSONParser,)
@@ -211,10 +210,9 @@ class InstallationEventViewSet(viewsets.ViewSet):
     def create(self, request):
         # Ищем установленное приложение или создаем об это запись в базе
         query = request.data
-        # Перевод данных userId из "01-000000000000001" в "1000000000000001"
-        # query['data']['userId'] = query['data']['userId'][1:2] + query['data']['userId'][3:18]
         # Переводим из Timestamp
-        # query['timestamp'] = datetime.fromtimestamp(query['timestamp'])
+        # query['timestamp'] = datetime.fromtimestamp(query['timestamp'] / 1000)
+        # print query
 
         # installation_data = installation_event.get('data')
         # print installation_data
@@ -222,8 +220,8 @@ class InstallationEventViewSet(viewsets.ViewSet):
 
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+        # headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def perform_create(self, serializer):
         # The request user is set as author automatically.

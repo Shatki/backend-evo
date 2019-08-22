@@ -115,7 +115,7 @@ class InstallationEvent(models.Model):
 
     # Дата и время отправки события, в миллисекундах. В формате unix timestamp.
     # "timestamp": 1504168645290
-    timestamp = UnixDateTimeField(verbose_name=u'дата и время отправки события')
+    timestamp = models.BigIntegerField(verbose_name=u'дата и время отправки события')
 
     # Версия API, к которой относятся события.
     # "version": 2
@@ -151,14 +151,14 @@ class Installation(models.Model):
     userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор',
                                default=UserId.DEFAULT_USERID, db_column='user_id', null=False)
     # Событие инсталляции
-    installation = models.ForeignKey(InstallationEvent, verbose_name=u'дата и идентификатор события [событие]',
-                                     default=None, on_delete=models.CASCADE, null=False)
+    installationId = models.ForeignKey(InstallationEvent, verbose_name=u'дата и идентификатор события [событие]',
+                                       default=None, on_delete=models.CASCADE, null=False)
 
     def __unicode__(self):
-        return u'{}: {}, {}'.format(self.installation, self.userId, self.productId)
+        return u'{}: {}, {}'.format(self.installationId, self.userId, self.productId)
 
     def __str__(self):
-        return u'{}: {}, {}'.format(self.installation, self.userId, self.productId)
+        return u'{}: {}, {}'.format(self.installationId, self.userId, self.productId)
 
     # def save(self, *args, **kwargs):
     #    print self.productId, self.userId.userId, self.installation.id

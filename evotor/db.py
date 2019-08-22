@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import django.db.models as models
 from django.utils.translation import gettext_lazy as _
-from django.db.models.expressions import OuterRef
 from django.core import exceptions, checks
 
 
@@ -179,6 +178,7 @@ class UserIdField(models.Field):
     def internal_type():
         """
             Возвращает наименование поля данных для моделей
+
             :return: 'UserIdField'
         """
         return 'UserIdField'
@@ -199,29 +199,27 @@ class UserIdField(models.Field):
             :param value: значение атрибута поля модели
             :return: Значение - параметр в запросе У нас это UserId
         """
-        print 'get_prep_value'
         value = super(UserIdField, self).get_prep_value(value)
         return self.to_python(value)
 
     def get_db_prep_value(self, value, connection, prepared=False):
         """
-            Преобразует value в значение для бэкенда базы данных. По умолчанию возвращает value,
-            если prepared=True, иначе – результат get_prep_value()
-            Всегда возвращает bigint значение из объекта python для базы данных
+            Преобразует value в значение для бэкенда базы данных.
+            По умолчанию возвращает value, если prepared=True, иначе – результат get_prep_value()
+
+            :param value: UserId значение для преобразования
+            :param connection: объект WrappedDataBase
+            :param prepared:
+            :return: возвращает bigint значение из объекта python для базы данных
         """
-        print 'get_db_prep_value'
         value = super(UserIdField, self).get_db_prep_value(value, connection, prepared)
-        cursor = connection.cursor()
-        cursor.execute('SELECT max(userId) FROM users  DESC LIMIT 0, 1')
-        result = cursor.fetchall()[0]
-        print result
-        if value is None or '':
-            print 'AutoKey'
-            # SELECT * FROM permlog ORDER BY id DESC LIMIT 0, 1
-            # SELECT max( mark ) FROM `student`
-            return UserId.DEFAULT_USERID
         if not isinstance(value, UserId):
             value = self.to_python(value)
+        # if value is None:
+        #     cursor = connection.cursor()
+        #     cursor.execute('SELECT max(userId) FROM users  DESC LIMIT 0, 1')
+        #     result = cursor.fetchall()[0][0]
+        #     return result + 1
         return value.int
 
     def to_python(self, value):
@@ -237,9 +235,8 @@ class UserIdField(models.Field):
             :param value: получаемое значение для преобразование в объект python
             :return: всегда возвращает объект python типа UserId
         """
-        print 'to_python', value
         if value is None or value == '':
-            value = UserId.DEFAULT_USERID
+             value = UserId.DEFAULT_USERID
         if not isinstance(value, UserId):
             input_form = 'int' if isinstance(value, int) else 'str'
             try:
@@ -268,5 +265,4 @@ class UserIdField(models.Field):
             :param kwargs:
             :return: возвращаем созданный или преобразованный объект python типа UserId
         """
-        print 'from_db_value'
         return self.to_python(value)

@@ -84,7 +84,7 @@ class InstallationDataAdmin(admin.ModelAdmin):
     model = Installation
 
     list_display = (
-        'installation',
+        'installationId',
         'productId',
         'userId',
     )

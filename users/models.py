@@ -36,13 +36,13 @@ class User(AbstractUser):
     # логинимся
     USERNAME_FIELD = 'username'
     # обязательное поле
-    REQUIRED_FIELDS = ['email', 'userId',]
+    REQUIRED_FIELDS = ['email', 'userId', ]
 
     def __unicode__(self):
-        return u'%s' % self.userId
+        return u'%s' % self.username
 
     def __str__(self):
-        return u'%s' % self.userId
+        return u'%s' % self.username
 
     def get_full_name(self):
         return u'{} {}'.format(self.first_name, self.last_name)
