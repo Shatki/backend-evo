@@ -55,11 +55,11 @@ class InstallationEventSerializer(serializers.ModelSerializer):
         depth = 2
         fields = ['id', 'timestamp', 'version', 'type', 'data', ]
 
-    def create(self, data):
-        print '<v', data, 'v>'
-        installation_data = data.pop('data')
-        installation_event = InstallationEvent.objects.create(**data)
-        print '<', installation_data, '|||', data, '>'
+    def create(self, getting_data):
+        print '<v', getting_data, 'v>'
+        installation_data = getting_data.pop('data')
+        installation_event = InstallationEvent.objects.create(**getting_data)
+        print '<', installation_event, '|||', installation_data, '>'
         for _data in installation_data:
             print '<!', _data, '!>'
             Installation.objects.create(installationId=installation_event, **_data)
@@ -69,7 +69,7 @@ class InstallationEventSerializer(serializers.ModelSerializer):
 """
 {
   "id": "a99fbf70-6307-4acc-b61c-741ee9eef6c0",
-  "timestamp": 15651571200000,
+  "timestamp": 11504168645290,
   "version": 2,
   "type": "ApplicationInstalled",
   "data": {
