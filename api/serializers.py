@@ -46,14 +46,18 @@ class InstallationSerializer(serializers.ModelSerializer):
         model = Installation
         fields = ['productId', 'userId', ]
 
+        class Meta:
+            unique_together = ['productId', 'userId']
+            # ordering = ['order']
+
 
 class InstallationEventSerializer(serializers.ModelSerializer):
-    data = InstallationSerializer(read_only=True)
+    data = InstallationSerializer(many=False)
 
     class Meta:
         model = InstallationEvent
-        depth = 2
-        fields = ['id', 'timestamp', 'version', 'type', 'data', ]
+        # depth = 2
+        fields = ['id', 'timestamp', 'version', 'type', 'data']
 
     def create(self, getting_data):
         print '<v', getting_data, 'v>'
@@ -62,7 +66,7 @@ class InstallationEventSerializer(serializers.ModelSerializer):
         print '<', installation_event, '|||', installation_data, '>'
         for _data in installation_data:
             print '<!', _data, '!>'
-            Installation.objects.create(installationId=installation_event, **_data)
+            Installation.objects.create(installationId=installation_event.id, **_data)
         return installation_event
 
 

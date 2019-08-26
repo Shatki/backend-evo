@@ -209,17 +209,17 @@ class InstallationEventViewSet(viewsets.ViewSet):
 
     def create(self, request):
         # Ищем установленное приложение или создаем об это запись в базе
-        query = request.data
         # Переводим из Timestamp
         # query['timestamp'] = datetime.fromtimestamp(query['timestamp'] / 1000)
-        # print query
+        # print 'query:', query
 
         # installation_data = installation_event.get('data')
         # print installation_data
-        serializer = serializers.InstallationEventSerializer(data=query)
+        serializer = serializers.InstallationEventSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        print 'serializer.data:', serializer.data
         # headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

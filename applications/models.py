@@ -151,7 +151,8 @@ class Installation(models.Model):
     userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор',
                                default=UserId.DEFAULT_USERID, db_column='user_id', null=False)
     # Событие инсталляции
-    installationId = models.ForeignKey(InstallationEvent, verbose_name=u'дата и идентификатор события [событие]',
+    installationId = models.ForeignKey(InstallationEvent, related_name='data', db_column='installation_id',
+                                       verbose_name=u'дата и идентификатор события [событие]',
                                        default=None, on_delete=models.CASCADE, null=False)
 
     def __unicode__(self):
