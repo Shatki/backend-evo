@@ -42,21 +42,23 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 
 class InstallationSerializer(serializers.ModelSerializer):
+    userId = serializers.CharField()
+
     class Meta:
         model = Installation
-        fields = ['productId', 'userId', ]
+        fields = ['productId', 'userId']
 
-        class Meta:
-            unique_together = ['productId', 'userId']
-            # ordering = ['order']
+        # class Meta:
+        #    unique_together = ['productId', 'userId']
+        #    # ordering = ['order']
 
 
 class InstallationEventSerializer(serializers.ModelSerializer):
-    data = InstallationSerializer(many=False)
+    data = InstallationSerializer(many=False, read_only=True)
 
     class Meta:
         model = InstallationEvent
-        # depth = 2
+        depth = 2
         fields = ['id', 'timestamp', 'version', 'type', 'data']
 
     def create(self, getting_data):
@@ -64,9 +66,9 @@ class InstallationEventSerializer(serializers.ModelSerializer):
         installation_data = getting_data.pop('data')
         installation_event = InstallationEvent.objects.create(**getting_data)
         print '<', installation_event, '|||', installation_data, '>'
-        for _data in installation_data:
-            print '<!', _data, '!>'
-            Installation.objects.create(installationId=installation_event.id, **_data)
+        for one_data in installation_data:
+            print '<!', one_data, '!>'
+            Installation.objects.create(installationId=installation_event.id, **one_data)
         return installation_event
 
 

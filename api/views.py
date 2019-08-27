@@ -192,8 +192,8 @@ class InstallationViewSet(viewsets.ViewSet):
            Журнал событий установки и удаления приложений
     """
     def list(self, request):
-        installations = InstallationEvent.objects.all()
-        serializer = serializers.InstallationEventSerializer(installations, many=True)
+        installation_events = InstallationEvent.objects.all()
+        serializer = serializers.InstallationEventSerializer(installation_events, many=True)
         return Response(serializer.data)
 
 
@@ -219,7 +219,6 @@ class InstallationEventViewSet(viewsets.ViewSet):
 
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        print 'serializer.data:', serializer.data
         # headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

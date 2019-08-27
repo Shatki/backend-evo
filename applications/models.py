@@ -25,10 +25,10 @@ class Application(models.Model):
                                   decimal_places=2, default=0.1)
 
     def __unicode__(self):
-        return str(self.uuid)
+        return u'%s' % self.name
 
     def __str__(self):
-        return str(self.uuid)
+        return u'%s' % self.name
 
     def save(self, *args, **kwargs):
         self.name = self.name.encode('utf-8')
@@ -146,14 +146,15 @@ class Installation(models.Model):
     # regex /^[0-9]{2}-[0-9]{15}$/
     # "productId": "string",
     productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения Эвотор',
-                                  default=uuid.uuid4, db_column='product_id',)
+                                  default=uuid.uuid4, db_column='product_id', )
     # Идентификатор пользователя в Облаке Эвотор.
     userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор',
                                default=UserId.DEFAULT_USERID, db_column='user_id', null=False)
     # Событие инсталляции
-    installationId = models.ForeignKey(InstallationEvent, related_name='data', db_column='installation_id',
-                                       verbose_name=u'дата и идентификатор события [событие]',
-                                       default=None, on_delete=models.CASCADE, null=False)
+    installationId = models.OneToOneField(InstallationEvent, primary_key=True,
+                                          related_name='data', db_column='installation_id',
+                                          verbose_name=u'дата и идентификатор события [событие]',
+                                          default=None, on_delete=models.CASCADE, null=False)
 
     def __unicode__(self):
         return u'{}: {}, {}'.format(self.installationId, self.userId, self.productId)

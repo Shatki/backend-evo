@@ -12,8 +12,8 @@ class UserId(object):
     DEFAULT_MASK = '00-000000000000000'
     REGEX_USERID = r'[0-9]{2}-[0-9]{15}'
     SEPARATOR_CONST = '-'
-    MAX_NODE = 10**2
-    MAX_NUMBER = 10**15
+    MAX_NODE = 10 ** 2
+    MAX_NUMBER = 10 ** 15
     MAX_INT = MAX_NODE * MAX_NUMBER
 
     def __init__(self, str=None, int=None, fields=None):
@@ -134,6 +134,10 @@ class UserId(object):
         str = '%017d' % self.int
         return '%s-%s' % (str[:2], str[2:])
 
+    def __repr__(self):
+        str = '%017d' % self.int
+        return '%s-%s' % (str[:2], str[2:])
+
 
 class UserIdField(models.Field):
     """
@@ -235,8 +239,9 @@ class UserIdField(models.Field):
             :param value: получаемое значение для преобразование в объект python
             :return: всегда возвращает объект python типа UserId
         """
+        # print "to_python", value, type(value)
         if value is None or value == '':
-             value = UserId.DEFAULT_USERID
+            value = UserId.DEFAULT_USERID
         if not isinstance(value, UserId):
             input_form = 'int' if isinstance(value, int) else 'str'
             try:
@@ -250,11 +255,24 @@ class UserIdField(models.Field):
         return value
 
     def contribute_to_class(self, cls, name, **kwargs):
-        assert not cls._meta.has_auto_field, \
-            "A model can't have more than one AutoField."
+        assert not cls._meta.has_auto_field, "A model can't have more than one AutoField."
         super(UserIdField, self).contribute_to_class(cls, name, **kwargs)
         cls._meta.has_auto_field = True
         cls._meta.auto_field = self
+
+    def value_to_string(self, obj):
+        """
+            Преобразование значений в строки для сериализатора
+            :param obj: объект
+            :return: строка - представление объекта в форме для сериализации
+        """
+        # print "value_to_string"
+        value = self._get_val_from_obj(obj)
+        if value is None:
+            str = ''
+        else:
+            str = value.__str__()
+        return str
 
     def from_db_value(self, value, *args, **kwargs):
         """
@@ -265,4 +283,5 @@ class UserIdField(models.Field):
             :param kwargs:
             :return: возвращаем созданный или преобразованный объект python типа UserId
         """
+        # print "from_db_value"
         return self.to_python(value)
