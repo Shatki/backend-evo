@@ -5,6 +5,7 @@ from applications.models import Subscription
 from stores.models import Store
 from products.models import Product
 from applications.models import Application, InstallationEvent, Installation
+from evotor.db import UserId
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -42,7 +43,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 
 class InstallationSerializer(serializers.ModelSerializer):
-    userId = serializers.CharField()
+    # userId = serializers.CharField()
 
     class Meta:
         model = Installation
@@ -61,14 +62,22 @@ class InstallationEventSerializer(serializers.ModelSerializer):
         depth = 2
         fields = ['id', 'timestamp', 'version', 'type', 'data']
 
-    def create(self, getting_data):
-        print '<v', getting_data, 'v>'
-        installation_data = getting_data.pop('data')
-        installation_event = InstallationEvent.objects.create(**getting_data)
-        print '<', installation_event, '|||', installation_data, '>'
-        for one_data in installation_data:
-            print '<!', one_data, '!>'
-            Installation.objects.create(installationId=installation_event.id, **one_data)
+    def create(self, validated_data):
+        try:
+            """
+                validated_data это комбинированные данные сериализатора и полученных данных
+                которые хранятся под ключем 'data'. !!! У нас тоже в данных есть свой ключ 'data',
+                поэтому первой строчкой выделяем полученные данные от данных сериализатора !!!
+            """
+            installation = validated_data.get('data', None)
+            installation_data = installation.pop('data')
+            installation_event = InstallationEvent.objects.create(**installation)
+            Installation.objects.create(installationId_id=installation_event.id,
+                                        productId_id=installation_data['productId'],
+                                        userId_id=installation_data['userId'])
+        except SyntaxError:
+            return SyntaxError
+            # print 'validated_data error:', validated_data['data']
         return installation_event
 
 

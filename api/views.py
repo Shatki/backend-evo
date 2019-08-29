@@ -225,3 +225,26 @@ class InstallationEventViewSet(viewsets.ViewSet):
     def perform_create(self, serializer):
         # The request user is set as author automatically.
         serializer.save(data=self.request.data)
+
+
+"""
+{
+    u'timestamp': 1504168645290, 
+    u'version': 2, 
+    u'type': u'ApplicationInstalled', 
+    u'id': UUID('a99fbf70-6307-4acc-b61c-741ee9eef6c0'), 
+    'data': 
+        {
+            u'timestamp': 1504168645290, 
+            u'version': 2, 
+            u'type': u'ApplicationInstalled', 
+            u'id': u'a99fbf70-6307-4acc-b61c-741ee9eef6c0', 
+            u'data': {
+                        u'userId': u'01-000000000000001', 
+                        u'productId': u'569af313-5fcf-43b4-9eb4-f81e8f17dac7'
+                      }
+        }
+}
+ 
+"""
+

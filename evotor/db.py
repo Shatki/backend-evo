@@ -2,6 +2,7 @@
 import django.db.models as models
 from django.utils.translation import gettext_lazy as _
 from django.core import exceptions, checks
+from django import forms
 
 
 class UserId(object):
@@ -131,10 +132,6 @@ class UserId(object):
         return u'%s-%s' % (str[:2], str[2:])
 
     def __str__(self):
-        str = '%017d' % self.int
-        return '%s-%s' % (str[:2], str[2:])
-
-    def __repr__(self):
         str = '%017d' % self.int
         return '%s-%s' % (str[:2], str[2:])
 
@@ -276,12 +273,26 @@ class UserIdField(models.Field):
 
     def from_db_value(self, value, *args, **kwargs):
         """
-            Преобразование значений базы данных в объекты Python
+            Преобразует значение из базы данных в объект Python. Метод обратный get_prep_value().
+            Для большинства встроенных полей этот метод не используется т.к. бэкенд базы данных возвращает
+            уже правильный объект Python, или же бэкенд сам выполняет необходимые преобразования.
+
+            !!! Замечание !!!
+            Этот метод используется Django REST сериализатором, поэтому возвращаем не объект,
+            а строку и наче сериализатор будет выдавать ошибку из-за того что не умеет сериализовать UserId
 
             :param value: значение из базы
             :param args:
             :param kwargs:
             :return: возвращаем созданный или преобразованный объект python типа UserId
         """
-        # print "from_db_value"
-        return self.to_python(value)
+        # print "from_db_value:", value, type(value)
+        return self.to_python(value).str
+
+    def formfield(self, **kwargs):
+        # Passing max_length to forms.CharField means that the value's length
+        # will be validated twice. This is considered acceptable since we want
+        # the value in the form field (to pass into widget for example).
+        defaults = {'max_length': self.max_length}
+        defaults.update(kwargs)
+        return super(UserIdField, self).formfield(**defaults)
