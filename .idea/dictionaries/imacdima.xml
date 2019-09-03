@@ -4,6 +4,7 @@
       <w>addons</w>
       <w>authtoken</w>
       <w>corsheaders</w>
+      <w>evotor</w>
       <w>evotorservice</w>
     </words>
   </dictionary>

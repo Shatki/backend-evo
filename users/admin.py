@@ -16,7 +16,7 @@ class UserAdmin(UserAdmin):
     list_display = (
         'username',
         'email',
-        'userId',
+        'user_evotor',
         'first_name',
         'last_name',
         'last_login')
@@ -37,7 +37,7 @@ class UserAdmin(UserAdmin):
                 'username',
                 'email',
                 'password',
-                'userId',
+                'user_evotor',
             )
         }),
 

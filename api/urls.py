@@ -26,10 +26,10 @@ router.register(r'installation/event', views.InstallationEventViewSet, basename=
 
 router.register(r'subscriptions', views.SubscriptionViewSet, basename='Subscription')
 router.register(r'subscription/event', views.SubscriptionEventViewSet, basename='SubscriptionEvent')
-#router.register(r'groups', views.GroupViewSet)
+
+# router.register(r'products', views.ProductViewSet, basename='Product')
+# router.register(r'groups', views.GroupViewSet)
 router.register(r'stores', views.StoreViewSet, basename='Store')
-
-
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
