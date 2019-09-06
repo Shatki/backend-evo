@@ -10,7 +10,7 @@ class UserCreationForm(forms.UserCreationForm):
         fields = (
             'username',
             'email',
-            'userId',
+            'user_evotor',
             'first_name',
             'last_name',
         )

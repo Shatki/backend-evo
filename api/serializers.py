@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
-from users.models import User
-from applications.models import Subscription
+from users.models import User, UserEvotor
+from applications.models import Application, Subscription
 from stores.models import Store
 from products.models import Product
 from applications.models import Application, InstallationEvent, Installation
@@ -11,7 +11,7 @@ from evotor.db import UserId
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['userId', 'email', 'username', 'first_name', 'last_name', ]
+        fields = ['username', 'email', 'user_evotor', 'first_name', 'last_name', ]
 
 
 class StoreSerializer(serializers.ModelSerializer):
@@ -71,26 +71,21 @@ class InstallationEventSerializer(serializers.ModelSerializer):
             """
             installation = validated_data.get('data', None)
             installation_data = installation.pop('data')
+            # В данном случае productId относится к модели Application и приложение должно быть известно иначе ошибка
+            installation_data_product = Application.objects.get(uuid=installation_data['productId'])
+
+            # Тут мы ищем в базе пользователя Эвотор или создаем нового
+            installation_data_user, created = UserEvotor.objects.get_or_create(userId=installation_data['userId'])
+            if created:
+                # if the new user is created
+                pass
+            # Create a new event
             installation_event = InstallationEvent.objects.create(**installation)
+
             Installation.objects.create(installationId_id=installation_event.id,
-                                        productId_id=installation_data['productId'],
-                                        userId_id=installation_data['userId'])
+                                        productId_id=installation_data_product.uuid,
+                                        userId_id=installation_data_user.userId)
         except SyntaxError:
             return SyntaxError
             # print 'validated_data error:', validated_data['data']
         return installation_event
-
-
-"""
-{
-  "id": "a99fbf70-6307-4acc-b61c-741ee9eef6c0",
-  "timestamp": 11504168645290,
-  "version": 2,
-  "type": "ApplicationInstalled",
-  "data": {
-    "productId": "569af313-5fcf-43b4-9eb4-f81e8f17dac7",
-    "userId": "01-000000000000001"
-  }
-}
-
-"""

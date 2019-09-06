@@ -1,10 +1,31 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from api.models import UserEvotor
 from evotor.validators import login, email
+from evotor.db import UserIdField
+
+
+# Create your models here.
+class UserEvotor(models.Model):
+    """
+        Класс пользователя облака Эвотор
+    """
+    class Meta:
+        verbose_name = u'пользователь облака Эвотор'
+        verbose_name_plural = u'пользователи облака Эвотор'
+        db_table = u'users_evotor'
+    # Идентификатор пользователя. 18 символов
+    userId = UserIdField(verbose_name=u'идентификатор пользователя Облака', primary_key=True, unique=True, null=False)
+    # stores = models.ManyToManyField(Store, verbose_name=u'магазины пользователя')
+    date_joined = models.DateTimeField(verbose_name=u'дата создания', auto_now_add=True)
+    date_updated = models.DateTimeField(verbose_name=u'последнее обновление', auto_now=True)
+
+    def __unicode__(self):
+        return u'%s' % self.userId
+
+    def __str__(self):
+        return u'%s' % self.userId
 
 
 class User(AbstractUser):
@@ -26,8 +47,7 @@ class User(AbstractUser):
     # Фамилия - также не обязательна
     last_name = models.CharField(verbose_name=u'фамилия пользователя', max_length=40, blank=True, null=True)
     # Идентификатор пользователя. 18 символов
-    user_evotor = models.ForeignKey(UserEvotor, verbose_name=u'пользователь облака Эвотор', unique=True, null=True,
-                                    default=None)
+    user_evotor = models.ForeignKey(UserEvotor, verbose_name=u'пользователь облака Эвотор', null=True, default=None)
     # Атрибут суперпользователя
     is_admin = models.BooleanField(default=False, null=False)
 

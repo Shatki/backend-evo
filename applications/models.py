@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from datetime import datetime
 from django_unixdatetimefield import UnixDateTimeField
 
 import uuid
 from django.db import models
-from users.models import User
+from users.models import User, UserEvotor
 from .constants import SUBSCRIPTION_TYPES, SUBSCRIPTION_TYPE_DEFAULT
 from .constants import APPLICATION_EVENT_DEFAULT, APPLICATION_EVENT_TYPES
 from evotor.db import UserId
@@ -30,10 +29,6 @@ class Application(models.Model):
     def __str__(self):
         return u'%s' % self.name
 
-    def save(self, *args, **kwargs):
-        self.name = self.name.encode('utf-8')
-        super(Application, self).save(*args, **kwargs)  # Call the "real" save() method.
-
 
 class Subscription(models.Model):
     class Meta:
@@ -53,7 +48,7 @@ class Subscription(models.Model):
 
     # Идентификатор пользователя в Облаке Эвотор.
     # "userId": "01-000000000000001",
-    userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя в Облаке Эвотор',
+    userId = models.ForeignKey(UserEvotor, verbose_name=u'идентификатор пользователя в Облаке Эвотор',
                                null=False, on_delete=models.CASCADE, default=1)
 
     # Дата и время отправки события. В соответствовии с ISO 8601.
@@ -148,7 +143,7 @@ class Installation(models.Model):
     productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения Эвотор',
                                   default=uuid.uuid4, db_column='product_id', )
     # Идентификатор пользователя в Облаке Эвотор.
-    userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор',
+    userId = models.ForeignKey(UserEvotor, verbose_name=u'идентификатор пользователя Эвотор',
                                default=UserId.DEFAULT_USERID, db_column='user_id', null=False)
     # Событие инсталляции
     installationId = models.OneToOneField(InstallationEvent, primary_key=True,
