@@ -2,7 +2,9 @@
 import django.db.models as models
 from django.utils.translation import gettext_lazy as _
 from django.core import exceptions, checks
-from django import forms
+from datetime import datetime
+import calendar
+import time
 
 
 class UserId(object):
@@ -296,3 +298,136 @@ class UserIdField(models.Field):
         defaults = {'max_length': self.max_length}
         defaults.update(kwargs)
         return super(UserIdField, self).formfield(**defaults)
+
+
+class TimestampField(models.Field):
+    """
+            ID field uses in evotor users' model
+        """
+    default_error_messages = {
+        'invalid': _('“%(value)s” is not a valid timestamp.'),
+    }
+    description = _('Unix timestamp database field')
+    empty_strings_allowed = False
+
+    def __init__(self, verbose_name=None, name=None, auto_now=False,
+                 auto_now_add=False, round_to=6, use_numeric=False, **kwargs):
+        self.auto_now, self.auto_now_add = auto_now, auto_now_add
+        self.round_to, self.use_numeric = round_to, use_numeric
+        if auto_now or auto_now_add:
+            kwargs['editable'] = False
+            kwargs['blank'] = True
+        super(TimestampField, self).__init__(verbose_name, name, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(TimestampField, self).deconstruct()
+        if self.auto_now:
+            kwargs['auto_now'] = True
+        if self.auto_now_add:
+            kwargs['auto_now_add'] = True
+        if self.auto_now or self.auto_now_add:
+            del kwargs['editable']
+            del kwargs['blank']
+        # kwargs['default'] = calendar.timegm(time.gmtime())
+        return name, path, args, kwargs
+
+    @staticmethod
+    def internal_type():
+        """
+            Возвращает наименование поля данных для моделей
+            :return: 'TimestampField'
+        """
+        return 'TimestampField'
+
+    def db_type(self, connection):
+        """
+            Возвращает тип значения для базы данных, у MySQL это bigint
+
+            :param connection: объект базы данных
+            :return: 'bigint'
+        """
+        return 'bigint'
+
+    def get_prep_value(self, value):
+        """
+            Метод должен вернуть значение, которое можно использовать как параметр в запросе.
+
+            :param value: значение атрибута поля модели
+            :return: Значение - параметр в запросе У нас это datetime
+        """
+        print "get_prep_value", value, type(value)
+        value = super(TimestampField, self).get_prep_value(value)
+        return self.to_python(value)
+
+    def get_db_prep_value(self, value, connection, prepared=False):
+        """
+            Преобразует value в значение для бэкенда базы данных.
+            По умолчанию возвращает value, если prepared=True, иначе – результат get_prep_value()
+            !!! Преобразует полученые значения и записывает их в базу
+
+            :param value: Timestamp значение для преобразования
+            :param connection: объект WrappedDataBase
+            :param prepared:
+            :return: возвращает bigint значение из объекта python для базы данных
+        """
+        # print "get_db_prep_value", value, type(value)
+        value = super(TimestampField, self).get_db_prep_value(value, connection, prepared)
+        if not isinstance(value, datetime):
+            value = self.to_python(value)
+        if value is None:
+            return None
+        return int(time.mktime(value.timetuple())) * 1000
+
+    def to_python(self, value):
+        """
+            Преобразует значение из базы данных (или сериалайзера) в объект Python.
+            Метод обратный get_prep_value() - подготавливает значение для поля для вставки в базу данных.
+            По умолчанию возвращает value, что обычно подходит, если бэкенд уже возвращает правильный объект Python.
+
+            Convert the input value into the expected Python data type, raising
+            django.core.exceptions.ValidationError if the data can't be converted.
+            Return the converted value. Subclasses should override this.
+
+            :param value: получаемое значение для преобразование в объект python
+            :return: всегда возвращает объект python типа datetime
+        """
+        print "to_python", value, type(value)
+        if value is not None and not isinstance(value, datetime):
+            try:
+                # обрезаем миллисекунды
+                return datetime.fromtimestamp(value // 1000)
+            except (AttributeError, ValueError):
+                raise exceptions.ValidationError(
+                    self.error_messages['invalid'],
+                    code='invalid',
+                    params={'value': value},
+                )
+        return value
+
+    def value_to_string(self, obj):
+        """
+            Преобразование значений в строки для сериализатора
+            :param obj: объект
+            :return: строка - представление объекта в форме для сериализации
+        """
+        # print "value_to_string"
+        value = self._get_val_from_obj(obj)
+        return value
+
+    def from_db_value(self, value, *args, **kwargs):
+        """
+            Преобразует значение из базы данных в объект Python. Метод обратный get_prep_value().
+            Для большинства встроенных полей этот метод не используется т.к. бэкенд базы данных возвращает
+            уже правильный объект Python, или же бэкенд сам выполняет необходимые преобразования.
+
+            !!! Замечание !!!
+            Этот метод используется Django REST сериализатором, поэтому возвращаем не объект,
+            а строку и наче сериализатор будет выдавать ошибку из-за того что не умеет сериализовать Timestamp
+
+            :param value: значение из базы
+            :param args:
+            :param kwargs:
+            :return: возвращаем числовое значение timestamp
+        """
+        # print "from_db_value:", value, type(value)
+        return self.to_python(value)

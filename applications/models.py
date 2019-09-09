@@ -4,10 +4,11 @@ from django_unixdatetimefield import UnixDateTimeField
 
 import uuid
 from django.db import models
+from evotor.db import UserId, TimestampField
 from users.models import User, UserEvotor
 from .constants import SUBSCRIPTION_TYPES, SUBSCRIPTION_TYPE_DEFAULT
 from .constants import APPLICATION_EVENT_DEFAULT, APPLICATION_EVENT_TYPES
-from evotor.db import UserId
+
 
 
 class Application(models.Model):
@@ -110,7 +111,7 @@ class InstallationEvent(models.Model):
 
     # Дата и время отправки события, в миллисекундах. В формате unix timestamp.
     # "timestamp": 1504168645290
-    timestamp = models.BigIntegerField(verbose_name=u'дата и время отправки события')
+    timestamp = TimestampField(verbose_name=u'дата и время отправки события')
 
     # Версия API, к которой относятся события.
     # "version": 2
