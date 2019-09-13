@@ -14,6 +14,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'user_evotor', 'first_name', 'last_name', ]
 
 
+class UserEvotorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'user_evotor', 'first_name', 'last_name', ]
+
+
 class StoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store

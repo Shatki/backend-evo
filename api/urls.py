@@ -20,6 +20,7 @@ from . import views
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet, basename='User')
+router.register(r'user/create', views.UserCreateViewSet, basename='UserCreate')
 
 router.register(r'installations', views.InstallationViewSet, basename='Installations')
 router.register(r'installation/event', views.InstallationEventViewSet, basename='InstallationEvent')
