@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.settings import api_settings
 
 from api import serializers
-from users.models import User, UserEvotor
+from users.models import User
 from applications.models import Subscription, InstallationEvent, Installation
 from stores.models import Store
 
@@ -20,7 +20,36 @@ from stores.models import Store
 @permission_classes((permissions.IsAuthenticatedOrReadOnly,))
 class UserViewSet(viewsets.ViewSet):
     """
-            Просмотр пользователей
+            ViewSet пользователей
+
+            Авторизация пользователя:
+            Запрос:
+            >{
+                "userId": "01-000000000000001",
+                "username": "И.Иванов",
+                "password": "superpassword",
+                "customField": "Дополнительные данные о пользователе"
+            }
+
+            Ответ:
+            >{
+                "userId": "01-000000000000001",
+                "hasBilling": true,
+                "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
+            }
+
+            Регистрация пользователя:
+            Запрос:
+            >{
+                "userId": "01-000000000000001",
+                "customField": "Дополнительные данные о пользователе"
+            }
+
+            Ответ:
+            >{
+                "userId": "01-000000000000001",
+                "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
+            }
     """
     lookup_field = 'userId'
     lookup_value_regex = '[0-9]{2}-[0-9]{15}'
@@ -37,28 +66,26 @@ class UserViewSet(viewsets.ViewSet):
         serializer = serializers.UserSerializer(queryset, many=True)
         return Response(serializer.data)
 
-
-@permission_classes((permissions.IsAuthenticatedOrReadOnly,))
-class UserCreateViewSet(viewsets.ViewSet):
-    """
-            Создание пользователей
-    """
-    # lookup_field = 'userId'
-    # lookup_value_regex = '[0-9]{2}-[0-9]{15}'
-
     def create(self, request):
         # Ищем пользователя или создаем об это запись в базе
-        # print installation_data
-        serializer = serializers.UserEvotorSerializer(data=request.data)
+        print "verify"
+        print request.data
+        serializer = serializers.UserSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         # headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def retrieve(self, request, userId):
+        print "verify", userId
+        pass
+
     def perform_create(self, serializer):
         # The request user is set as author automatically.
         serializer.save(data=self.request.data)
+
+
 
 
 @permission_classes((permissions.IsAuthenticatedOrReadOnly,))

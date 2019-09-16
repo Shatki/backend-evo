@@ -24,6 +24,7 @@ FILES_DIR = os.path.dirname(os.path.join(os.path.expanduser('~'), FILES))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'dh-=q^q_14f28ams(_(7=yb)yvcaf9letw*@u8_2gc)np1a=ak'
+EVOTOR_TOKEN = 'bd1a88b7-246e-4f8b-9eb1-c3dca7819120'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -169,21 +170,7 @@ CKEDITOR_CONFIGS = {
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = 'Ru-ru'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/1.11/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-Ru'
 
 TIME_ZONE = 'UTC'
 

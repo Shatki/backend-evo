@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
-from users.models import User, UserEvotor
+from users.models import User
 from applications.models import Application, Subscription
 from stores.models import Store
 from products.models import Product
@@ -11,13 +11,7 @@ from evotor.db import UserId
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'user_evotor', 'first_name', 'last_name', ]
-
-
-class UserEvotorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'user_evotor', 'first_name', 'last_name', ]
+        fields = ['userId', 'username', 'email', 'first_name', 'last_name', ]
 
 
 class StoreSerializer(serializers.ModelSerializer):

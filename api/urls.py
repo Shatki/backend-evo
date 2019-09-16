@@ -19,18 +19,19 @@ from rest_framework import routers
 from . import views
 
 router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet, basename='User')
-router.register(r'user/create', views.UserCreateViewSet, basename='UserCreate')
+router.register(r'users', views.UserViewSet, basename='Users')
+router.register(r'user/create', views.UserViewSet, basename='UserCreate')
+router.register(r'user/verify', views.UserViewSet, basename='UserVerify')
 
 router.register(r'installations', views.InstallationViewSet, basename='Installations')
 router.register(r'installation/event', views.InstallationEventViewSet, basename='InstallationEvent')
 
-router.register(r'subscriptions', views.SubscriptionViewSet, basename='Subscription')
+router.register(r'subscriptions', views.SubscriptionViewSet, basename='Subscriptions')
 router.register(r'subscription/event', views.SubscriptionEventViewSet, basename='SubscriptionEvent')
 
 # router.register(r'products', views.ProductViewSet, basename='Product')
 # router.register(r'groups', views.GroupViewSet)
-router.register(r'stores', views.StoreViewSet, basename='Store')
+router.register(r'stores', views.StoreViewSet, basename='Stores')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

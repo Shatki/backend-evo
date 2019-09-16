@@ -5,7 +5,7 @@ from django_unixdatetimefield import UnixDateTimeField
 import uuid
 from django.db import models
 from evotor.db import UserId, TimestampField
-from users.models import User, UserEvotor
+from users.models import User
 from .constants import SUBSCRIPTION_TYPES, SUBSCRIPTION_TYPE_DEFAULT
 from .constants import APPLICATION_EVENT_DEFAULT, APPLICATION_EVENT_TYPES
 
@@ -49,7 +49,7 @@ class Subscription(models.Model):
 
     # Идентификатор пользователя в Облаке Эвотор.
     # "userId": "01-000000000000001",
-    userId = models.ForeignKey(UserEvotor, verbose_name=u'идентификатор пользователя в Облаке Эвотор',
+    userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя в Облаке Эвотор',
                                null=False, on_delete=models.CASCADE, default=1)
 
     # Дата и время отправки события. В соответствовии с ISO 8601.
@@ -144,7 +144,7 @@ class Installation(models.Model):
     productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения Эвотор',
                                   default=uuid.uuid4, db_column='product_id', )
     # Идентификатор пользователя в Облаке Эвотор.
-    userId = models.ForeignKey(UserEvotor, verbose_name=u'идентификатор пользователя Эвотор',
+    userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор',
                                default=UserId.DEFAULT_USERID, db_column='user_id', null=False)
     # Событие инсталляции
     installationId = models.OneToOneField(InstallationEvent, primary_key=True,

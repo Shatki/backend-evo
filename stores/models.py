@@ -11,20 +11,17 @@ class Store(models.Model):
         verbose_name_plural = u'магазины'
         db_table = 'stores'
 
-    uuid = models.UUIDField(primary_key=True,
-                            default=uuid.uuid4, editable=False, unique=True, null=False)
+    uuid = models.UUIDField(verbose_name='UUID', primary_key=True,
+                            default=uuid.uuid4, unique=True, null=False)
     address = models.CharField(verbose_name=u'адрес магазина', max_length=100, null=True)
     name = models.CharField(verbose_name=u'имя магазина', max_length=50, null=False,
-                            default=u'мой магазин'.encode('utf-8'))
+                            default=u'мой магазин')
     code = models.CharField(verbose_name=u'код магазина', max_length=15, null=True, blank=True, default=None)
 
-    def __str__(self):
-        return self.name
+    def __unicode__(self):
+        return u'%s' % self.name
 
-    def save(self, *args, **kwargs):
-        # self.uuid = self.uuid.upper()
-        self.name = self.name.encode('utf-8')
-        self.address = self.address.encode('utf-8')
-        super(Store, self).save(*args, **kwargs)  # Call the "real" save() method.
+    def __str__(self):
+        return u'%s' % self.name
 
 

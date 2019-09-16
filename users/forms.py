@@ -8,9 +8,9 @@ class UserCreationForm(forms.UserCreationForm):
     class Meta:
         model = User
         fields = (
+            'userId',
             'username',
             'email',
-            'user_evotor',
             'first_name',
             'last_name',
         )
@@ -23,6 +23,7 @@ class UserChangeForm(forms.UserChangeForm):
     class Meta:
         model = User
         fields = (
+            'userId',
             'username',
             'email',
             'password',

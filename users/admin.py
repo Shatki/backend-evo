@@ -3,31 +3,7 @@ from __future__ import unicode_literals
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .forms import UserCreationForm, UserChangeForm
-from .models import User, UserEvotor
-
-
-@admin.register(UserEvotor)
-class UserEvotorAdmin(admin.ModelAdmin):
-    model = UserEvotor
-
-    list_display = (
-        'userId',
-    )
-
-    list_filter = (
-        'date_joined',
-        'date_updated',
-    )
-    readonly_fields = (
-        'date_joined',
-        'date_updated',
-    )
-
-    search_fields = (
-        'userId',)
-
-    ordering = (
-        'userId',)
+from .models import User
 
 
 @admin.register(User)
@@ -37,9 +13,9 @@ class UserAdmin(UserAdmin):
     add_form = UserCreationForm
 
     list_display = (
+        'userId',
         'username',
         'email',
-        'user_evotor',
         'first_name',
         'last_name',)
 
@@ -56,10 +32,10 @@ class UserAdmin(UserAdmin):
     fieldsets = (
         (None, {
             'fields': (
+                'userId',
                 'username',
                 'email',
                 'password',
-                'user_evotor',
             )
         }),
 
@@ -93,7 +69,6 @@ class UserAdmin(UserAdmin):
                 ('wide',),
             'fields': (
                 'username',
-                'user_evotor',
                 'email',
                 'password1',
                 'password2',
