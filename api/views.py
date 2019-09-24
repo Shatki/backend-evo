@@ -50,7 +50,13 @@ class UserCreateView(APIView):
         serializer = serializers.UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            user = serializer.validated_data['userId']
+            token = Token.objects.get(user=user)
+            return Response({
+                'userId': str(user),
+                'token': token.key
+            }, status=status.HTTP_200_OK)
+        # Временное решение для инициации ошибки 409: Такой Юзер уже есть
         if 'userId' in serializer.errors.keys() or 'username' in serializer.errors.keys():
             return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
 

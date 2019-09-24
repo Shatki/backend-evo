@@ -14,15 +14,9 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['userId', 'username', 'email', 'first_name', 'last_name']
 
-    def to_representation(self, obj):
-        return {
-            'userId': str(obj.userId),
-            'token': str(self.token)
-        }
-
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
-        self.token, self.created = Token.objects.get_or_create(user=user)
+        Token.objects.get_or_create(user=user)
         return user
 
 
