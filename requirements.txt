@@ -3,7 +3,8 @@ Django-debug-toolbar
 Markdown
 django-filter
 djangorestframework
-django-rest-auth
+django-rest-auth==0.9.5
+django-allauth==0.38.0
 Pillow
 django-ckeditor
 django-cors-headers==2.5.2

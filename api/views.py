@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from datetime import datetime
 
+from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView, CreateAPIView
+from rest_framework import authentication, permissions
 from rest_framework.decorators import permission_classes
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
@@ -13,15 +17,49 @@ from rest_framework.settings import api_settings
 
 from api import serializers
 from users.models import User
+from rest_framework.authtoken.models import Token
 from applications.models import Subscription, InstallationEvent, Installation
 from stores.models import Store
 
 
-@permission_classes((permissions.IsAuthenticatedOrReadOnly,))
-class UserViewSet(viewsets.ViewSet):
+class UserCreateView(APIView):
     """
-            ViewSet пользователей
+            Регистрация пользователя:
 
+            Запрос:
+            >{
+                "userId": "01-000000000000003",
+                "password": "crjhgbjy303",
+                "username": "test3"
+            }
+
+            Ответ:
+            >{
+                "userId": "01-000000000000003",
+                "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
+            }
+    """
+    # lookup_field = 'userId'
+    # lookup_value_regex = '[0-9]{2}-[0-9]{15}'
+
+    # authentication_classes = [authentication.TokenAuthentication]
+    # permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        # print "verify", userId
+        serializer = serializers.UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        if 'userId' in serializer.errors.keys() or 'username' in serializer.errors.keys():
+            return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@permission_classes((permissions.IsAuthenticatedOrReadOnly,))
+class UserVerifyView(APIView):
+    """
             Авторизация пользователя:
             Запрос:
             >{
@@ -37,23 +75,12 @@ class UserViewSet(viewsets.ViewSet):
                 "hasBilling": true,
                 "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
             }
-
-            Регистрация пользователя:
-            Запрос:
-            >{
-                "userId": "01-000000000000001",
-                "customField": "Дополнительные данные о пользователе"
-            }
-
-            Ответ:
-            >{
-                "userId": "01-000000000000001",
-                "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
-            }
     """
-    lookup_field = 'userId'
-    lookup_value_regex = '[0-9]{2}-[0-9]{15}'
+    # lookup_field = 'userId'
+    # lookup_value_regex = '[0-9]{2}-[0-9]{15}'
 
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAdminUser]
     @staticmethod
     def get_object(userId):
         try:
@@ -61,31 +88,33 @@ class UserViewSet(viewsets.ViewSet):
         except User.DoesNotExist:
             raise Http404
 
-    def list(self, request):
+    def get(self, request):
         queryset = User.objects.all()
         serializer = serializers.UserSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    def create(self, request):
+    def post(self, request):
         # Ищем пользователя или создаем об это запись в базе
-        print "verify"
-        print request.data
         serializer = serializers.UserSerializer(data=request.data)
+        userId = request.data.get('userId')
+        print userId
+        # Create a store from the above data
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        # headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def retrieve(self, request, userId):
+    def retrieve(self, request):
+        userId = request.data.get('userId')
         print "verify", userId
-        pass
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=userId)
+        serializer = serializers.UserSerializer(user)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         # The request user is set as author automatically.
         serializer.save(data=self.request.data)
-
-
 
 
 @permission_classes((permissions.IsAuthenticatedOrReadOnly,))
@@ -97,34 +126,10 @@ class SubscriptionViewSet(viewsets.ViewSet):
     lookup_value_regex = '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
     permission_classes = [permissions.IsAdminUser]
 
-    @staticmethod
-    def get_object(subscriptionId):
-        try:
-            return Subscription.objects.get(subscriptionId=subscriptionId)
-        except Subscription.DoesNotExist:
-            raise Http404
-
-    def list(self, request):
+    def get(self, request):
         queryset = Subscription.objects.all()
         serializer = serializers.SubscriptionSerializer(queryset, many=True)
         return Response(serializer.data)
-
-    def create(self, request):
-        pass
-
-    def retrieve(self, request, subscriptionId):
-        subscription = self.get_object(subscriptionId)
-        serializer = serializers.SubscriptionSerializer(subscription)
-        return Response(serializer.data)
-
-    def update(self, request, subscriptionId):
-        pass
-
-    def partial_update(self, request, subscriptionId=None):
-        pass
-
-    def destroy(self, request, subscriptionId):
-        pass
 
 
 @permission_classes((permissions.AllowAny,))
@@ -242,10 +247,6 @@ class InstallationEventViewSet(viewsets.ViewSet):
 
     def create(self, request):
         # Ищем установленное приложение или создаем об это запись в базе
-        # Переводим из Timestamp
-        # query['timestamp'] = datetime.fromtimestamp(query['timestamp'] / 1000)
-        # print 'query:', query
-
         # installation_data = installation_event.get('data')
         # print installation_data
         serializer = serializers.InstallationEventSerializer(data=request.data)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 from users.models import User
+from rest_framework.authtoken.models import Token
 from applications.models import Application, Subscription
 from stores.models import Store
 from products.models import Product
@@ -11,7 +12,18 @@ from evotor.db import UserId
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['userId', 'username', 'email', 'first_name', 'last_name', ]
+        fields = ['userId', 'username', 'email', 'first_name', 'last_name']
+
+    def to_representation(self, obj):
+        return {
+            'userId': str(obj.userId),
+            'token': str(self.token)
+        }
+
+    def create(self, validated_data):
+        user = User.objects.create(**validated_data)
+        self.token, self.created = Token.objects.get_or_create(user=user)
+        return user
 
 
 class StoreSerializer(serializers.ModelSerializer):
@@ -75,7 +87,7 @@ class InstallationEventSerializer(serializers.ModelSerializer):
             installation_data_product = Application.objects.get(uuid=installation_data['productId'])
 
             # Тут мы ищем в базе пользователя Эвотор или создаем нового
-            installation_data_user, created = UserEvotor.objects.get_or_create(userId=installation_data['userId'])
+            installation_data_user, created = User.objects.get_or_create(userId=installation_data['userId'])
             if created:
                 # if the new user is created
                 pass

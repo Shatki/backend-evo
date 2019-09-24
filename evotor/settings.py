@@ -25,6 +25,7 @@ FILES_DIR = os.path.dirname(os.path.join(os.path.expanduser('~'), FILES))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'dh-=q^q_14f28ams(_(7=yb)yvcaf9letw*@u8_2gc)np1a=ak'
 EVOTOR_TOKEN = 'bd1a88b7-246e-4f8b-9eb1-c3dca7819120'
+# 4d01c1a301068abca70fb7bd32a370479c511f4c
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -46,8 +47,6 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_auth',
-    'corsheaders',
 
     'api.apps.ApiConfig',
     'applications.apps.ApplicationsConfig',
@@ -67,6 +66,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+SITE_ID = 1
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -129,7 +132,11 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -138,6 +145,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
+
+
 
 CKEDITOR_UPLOAD_PATH = "uploads/"
 CKEDITOR_IMAGE_BACKEND = "pillow"

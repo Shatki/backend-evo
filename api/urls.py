@@ -15,34 +15,40 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
-from rest_framework import routers
+from rest_framework.generics import ListAPIView
+# from rest_framework import routers
 from . import views
+from users.models import User
 
-router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet, basename='Users')
-router.register(r'user/create', views.UserViewSet, basename='UserCreate')
-router.register(r'user/verify', views.UserViewSet, basename='UserVerify')
+from api import serializers
 
-router.register(r'installations', views.InstallationViewSet, basename='Installations')
-router.register(r'installation/event', views.InstallationEventViewSet, basename='InstallationEvent')
+# router = routers.DefaultRouter()
+# router.register(r'users', views.UserViewSet, basename='Users')
+# router.register(r'user/create', views.UserCreate, basename='UserCreate')
+# router.register(r'user/verify', views.UserVerify, basename='UserVerify')
 
-router.register(r'subscriptions', views.SubscriptionViewSet, basename='Subscriptions')
-router.register(r'subscription/event', views.SubscriptionEventViewSet, basename='SubscriptionEvent')
+# router.register(r'installations', views.InstallationViewSet, basename='Installations')
+# router.register(r'installation/event', views.InstallationEventViewSet, basename='InstallationEvent')
+
+# router.register(r'subscriptions', views.SubscriptionViewSet, basename='Subscriptions')
+# router.register(r'subscription/event', views.SubscriptionEventViewSet, basename='SubscriptionEvent')
 
 # router.register(r'products', views.ProductViewSet, basename='Product')
 # router.register(r'groups', views.GroupViewSet)
-router.register(r'stores', views.StoreViewSet, basename='Stores')
+# router.register(r'stores', views.StoreViewSet, basename='Stores')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    # url('^users/', include('users.urls')),
+    url(r'^user/create/$', views.UserCreateView.as_view()),
+    url(r'^user/verify/$', views.UserVerifyView.as_view()),
+    url(r'^users/$', ListAPIView.as_view(queryset=User.objects.all(),
+                                         serializer_class=serializers.UserSerializer), name='user-list'),
     #url(r'^stores/$', views.StoreList.as_view()),
     #url(r'^stores/(?P<uuid>[0-9A-Fa-f-]+/$)', views.StoreDetail.as_view()),
     # url('', views.UserList.as_view()),
     url(r'^rest-auth/', include('rest_auth.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    #url('^subscription/event', include('users.urls')),
 ]
 
-urlpatterns += router.urls
+# urlpatterns += router.urls
