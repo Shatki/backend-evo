@@ -39,18 +39,15 @@ class UserCreateView(APIView):
                 "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
             }
     """
-    # lookup_field = 'userId'
-    # lookup_value_regex = '[0-9]{2}-[0-9]{15}'
-
     # authentication_classes = [authentication.TokenAuthentication]
     # permission_classes = [permissions.IsAdminUser]
 
     def post(self, request, *args, **kwargs):
         # print "verify", userId
         serializer = serializers.UserSerializer(data=request.data)
+        user = serializer.validated_data['userId']
         if serializer.is_valid():
             serializer.save()
-            user = serializer.validated_data['userId']
             token = Token.objects.get(user=user)
             return Response({
                 'userId': str(user),
