@@ -41,6 +41,8 @@ class UserCreateView(APIView):
     """
     # authentication_classes = [authentication.TokenAuthentication]
     # permission_classes = [permissions.IsAdminUser]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAdminUser]
 
     def post(self, request, *args, **kwargs):
         # print "verify", userId
@@ -60,8 +62,7 @@ class UserCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@permission_classes((permissions.IsAuthenticatedOrReadOnly,))
-class UserVerifyView(APIView):
+class UserVerifyView(APIView, authentication.BaseAuthentication):
     """
             Авторизация пользователя:
             Запрос:
@@ -82,8 +83,10 @@ class UserVerifyView(APIView):
     # lookup_field = 'userId'
     # lookup_value_regex = '[0-9]{2}-[0-9]{15}'
 
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAdminUser]
+    # authentication_classes = [authentication.TokenAuthentication]
+    # permission_classes = [permissions.IsAdminUser]
+    # User.objects.get(userId=userId)
+
     @staticmethod
     def get_object(userId):
         try:
@@ -91,33 +94,43 @@ class UserVerifyView(APIView):
         except User.DoesNotExist:
             raise Http404
 
-    def get(self, request):
-        queryset = User.objects.all()
-        serializer = serializers.UserSerializer(queryset, many=True)
-        return Response(serializer.data)
-
     def post(self, request):
-        # Ищем пользователя или создаем об это запись в базе
+        # Авторизация пользователя в системе
         serializer = serializers.UserSerializer(data=request.data)
         userId = request.data.get('userId')
-        print userId
+
         # Create a store from the above data
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def retrieve(self, request):
-        userId = request.data.get('userId')
-        print "verify", userId
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, pk=userId)
-        serializer = serializers.UserSerializer(user)
-        return Response(serializer.data)
+    def authenticate(self, request):
+        username = request.META.get('HTTP_X_USERNAME')
+        if not username:
+            return None
 
-    def perform_create(self, serializer):
-        # The request user is set as author automatically.
-        serializer.save(data=self.request.data)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise exceptions.AuthenticationFailed('No such user')
+
+        return (user, None)
+
+    """
+        def retrieve(self, request):
+            userId = request.data.get('userId')
+            print "verify", userId
+            queryset = User.objects.all()
+            user = get_object_or_404(queryset, pk=userId)
+            serializer = serializers.UserSerializer(user)
+            return Response(serializer.data)
+    
+        def perform_create(self, serializer):
+            # The request user is set as author automatically.
+            serializer.save(data=self.request.data)
+    """
+
 
 
 @permission_classes((permissions.IsAuthenticatedOrReadOnly,))
