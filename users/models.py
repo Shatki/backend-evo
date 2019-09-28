@@ -20,7 +20,7 @@ class User(AbstractUser):
 
     # Имя логина авторизации
     username = models.CharField(verbose_name=u'имя пользователя в системе',
-                                unique=True, max_length=30, db_index=True, validators=[login])
+                                unique=True, max_length=30, db_index=True)
     # E-mail
     # email = models.EmailField(verbose_name=u'электронная почта', unique=True, max_length=255, validators=[email])
     # Имя - не является обязательным

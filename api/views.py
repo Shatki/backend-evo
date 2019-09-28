@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.http import Http404
+from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404
 from datetime import datetime
 
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
-from rest_framework.generics import GenericAPIView, CreateAPIView
 from rest_framework import authentication, permissions
 from rest_framework.decorators import permission_classes
-from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework import permissions
@@ -41,15 +41,12 @@ class UserCreateView(APIView):
     """
     # authentication_classes = [authentication.TokenAuthentication]
     # permission_classes = [permissions.IsAdminUser]
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAdminUser]
 
     def post(self, request, *args, **kwargs):
-        # print "verify", userId
         serializer = serializers.UserSerializer(data=request.data)
-        user = serializer.validated_data['userId']
         if serializer.is_valid():
             serializer.save()
+            user = serializer.validated_data['userId']
             token = Token.objects.get(user=user)
             return Response({
                 'userId': str(user),
@@ -58,11 +55,10 @@ class UserCreateView(APIView):
         # Временное решение для инициации ошибки 409: Такой Юзер уже есть
         if 'userId' in serializer.errors.keys() or 'username' in serializer.errors.keys():
             return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserVerifyView(APIView, authentication.BaseAuthentication):
+class UserVerifyView(APIView):
     """
             Авторизация пользователя:
             Запрос:
@@ -83,39 +79,29 @@ class UserVerifyView(APIView, authentication.BaseAuthentication):
     # lookup_field = 'userId'
     # lookup_value_regex = '[0-9]{2}-[0-9]{15}'
 
-    # authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [permissions.IsAdminUser]
     # User.objects.get(userId=userId)
-
-    @staticmethod
-    def get_object(userId):
-        try:
-            return User.objects.get(userId=userId)
-        except User.DoesNotExist:
-            raise Http404
-
     def post(self, request):
         # Авторизация пользователя в системе
         serializer = serializers.UserSerializer(data=request.data)
         userId = request.data.get('userId')
-
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is None or userId != user.userId:
+            return Response({
+                "error": "Пользователь с такими данными не существует"
+            }, status=status.HTTP_409_CONFLICT)
         # Create a store from the above data
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        login(request, user=user)
+        if request.user.is_authenticated:
+            token = Token.objects.get(user=user)
+            return Response({
+                "userId": userId,
+                "hasBilling": True,
+                "token": token.key
+            }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def authenticate(self, request):
-        username = request.META.get('HTTP_X_USERNAME')
-        if not username:
-            return None
-
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            raise exceptions.AuthenticationFailed('No such user')
-
-        return (user, None)
 
     """
         def retrieve(self, request):

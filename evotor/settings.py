@@ -24,7 +24,7 @@ FILES_DIR = os.path.dirname(os.path.join(os.path.expanduser('~'), FILES))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'dh-=q^q_14f28ams(_(7=yb)yvcaf9letw*@u8_2gc)np1a=ak'
-EVOTOR_TOKEN = 'bd1a88b7-246e-4f8b-9eb1-c3dca7819120'
+EVOTOR_TOKEN = '113d539530237fc6797df463ea0c5fbcf12fcd62'
 # 4d01c1a301068abca70fb7bd32a370479c511f4c
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -132,11 +132,11 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        #'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        'evotor.authentication.EvotorTokenAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',

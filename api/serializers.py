@@ -10,12 +10,16 @@ from evotor.db import UserId
 
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
-        fields = ['userId', 'username', 'email', 'first_name', 'last_name']
+        fields = ['userId', 'username', 'email', 'password', 'first_name', 'last_name']
 
     def create(self, validated_data):
-        user = User.objects.create(**validated_data)
+        user = super(UserSerializer, self).create(validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
         Token.objects.get_or_create(user=user)
         return user
 
