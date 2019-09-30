@@ -1,20 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import binascii
+import os
+
+
+from django.conf import settings
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
+from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from evotor.validators import login, email
+
 from evotor.db import UserIdField
+from evotor.validators import login, email
 
-
+@python_2_unicode_compatible
 class User(AbstractUser):
     """
         Класс пользователя системы сервисов Эвотор
     """
-    class Meta:
-        verbose_name = u'пользователь'
-        verbose_name_plural = u'пользователи'
-        db_table = u'users'
-
     # Идентификатор пользователя. 18 символов
     userId = UserIdField(verbose_name=u'идентификатор пользователя Облака', primary_key=True, unique=True, null=False)
 
@@ -38,6 +42,11 @@ class User(AbstractUser):
     # обязательное поле
     REQUIRED_FIELDS = ['userId']
 
+    class Meta:
+        verbose_name = _("User")
+        verbose_name_plural = _("Users")
+        db_table = u'users'
+
     def __unicode__(self):
         return u'%s' % self.username
 
@@ -55,3 +64,32 @@ class User(AbstractUser):
 
     def has_perm(self, perm, obj=None):
         return True
+
+
+@python_2_unicode_compatible
+class Token(models.Model):
+    """
+    The default authorization token model.
+    """
+    key = models.CharField(_("Key"), max_length=40, primary_key=True)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name='auth_token',
+        on_delete=models.CASCADE, verbose_name=_("User")
+    )
+    created = models.DateTimeField(_("Created"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Token")
+        verbose_name_plural = _("Tokens")
+        db_table = "tokens"
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super(Token, self).save(*args, **kwargs)
+
+    def generate_key(self):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    def __str__(self):
+        return self.key

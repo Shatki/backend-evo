@@ -10,7 +10,6 @@ from .constants import SUBSCRIPTION_TYPES, SUBSCRIPTION_TYPE_DEFAULT
 from .constants import APPLICATION_EVENT_DEFAULT, APPLICATION_EVENT_TYPES
 
 
-
 class Application(models.Model):
     class Meta:
         verbose_name = u'приложение'
