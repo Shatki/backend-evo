@@ -15,31 +15,55 @@ from users.models import User, Token
 
 
 class APIResponse(View):
-    evotor_token = settings.EVOTOR_TOKEN
-    evotor_type_token = u'Bearer'
+    def __init__(self):
+        self._evotor_type_token = 'Bearer'
+        self._evotor_token = settings.EVOTOR_TOKEN
+        self._errors = []
+        self._message = []
+        self._status = status.HTTP_200_OK
+        super(APIResponse, self).__init__()
 
-    @staticmethod
-    def response(message, http_status):
-        return JsonResponse(
-            # неверный токен облака Эвотор.
-            message,
-            status=http_status,
-            safe=False)
+    def response(self, message):
+        if len(self._errors) > 0:
+            return JsonResponse(
+                # неверный токен облака Эвотор.
+                {
+                    "errors": self._errors
+                },
+                status=self._status,
+                safe=False)
+        else:
+            return JsonResponse(
+                # неверный токен облака Эвотор.
+                message,
+                status=status.HTTP_200_OK,
+                safe=False)
+
+    def add_error(self, error):
+        self._errors.append({
+            "code": error
+        })
+        # Тут алгоритм присвоения статуса кода ответа
+        if error == status.ERROR_CODE_1001_WRONG_TOKEN:
+            self._status = status.HTTP_401_UNAUTHORIZED
+        elif error == status.ERROR_CODE_1006_WRONG_DATA:
+            self._status = status.HTTP_401_UNAUTHORIZED
+        elif error == status.ERROR_CODE_2004_USER_EXIST:
+            self._status = status.HTTP_409_CONFLICT
+        else:
+            self._status = status.HTTP_400_BAD_REQUEST
 
     def action(self, data):
-        return data, status.HTTP_200_OK
+        pass
 
     def post(self, request, *args, **kwargs):
-        # print request.META.get('HTTP_AUTHORIZATION')
         if request.method == 'POST':
             try:
                 token = request.META.get('HTTP_AUTHORIZATION').split(" ")
             except:
-                return self.response({
-                    # неверный токен облака Эвотор.
-                    'errors': '1001'},
-                    status.HTTP_409_CONFLICT)
-            if token[0] == self.evotor_type_token and token[1] == self.evotor_token:
+                self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN)
+                return self.response({})
+            if token[0] == self._evotor_type_token and token[1] == self._evotor_token:
                 data = json.loads(request.body.decode("utf-8"))
                 # hasBilling: boolean (Required)
                 # Определяет, на чьей стороне производится биллинг по данному пользователю.
@@ -47,17 +71,15 @@ class APIResponse(View):
                 # true - в стороннем сервисе
                 #
                 # false - на стороне Эвотор
-                message, http_status = self.action(data)
 
-                return self.response(message, http_status=http_status)  # ????
+                # Все удачно, - возвращаем ответ 200
+                return self.response(self.action(data))
             else:
-                return self.response({
-                    # неверный тип токена, нужен 'Bearer'
-                    'errors': '1001'
-                }, status.HTTP_401_UNAUTHORIZED)
+                self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN)
+                return self.response({})
 
+                # errors.add(status.ERROR_CODE_1001_WRONG_TOKEN)
+                # return self.response()
         else:
-            return self.response({
-                # Метод не POST
-                'errors': 'Разрешен только POST запрос'
-            }, status.HTTP_400_BAD_REQUEST)
+            self.add_error(status.ERROR_CODE_2002_BAD_REQUEST)
+            return self.response({})

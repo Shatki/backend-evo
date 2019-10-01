@@ -27,7 +27,7 @@ from api import serializers
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     url(r'^user/create/$', csrf_exempt(views.UserCreateView.as_view()), name="create"),
-    # url(r'^user/verify/$', views.user_create.as_view()),
+    url(r'^user/verify/$', csrf_exempt(views.UserCreateVerify.as_view()), name="verify"),
 
     #url(r'^stores/$', views.StoreList.as_view()),
     #url(r'^stores/(?P<uuid>[0-9A-Fa-f-]+/$)', views.StoreDetail.as_view()),

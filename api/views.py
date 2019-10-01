@@ -23,33 +23,32 @@ class UserCreateView(APIResponse):
                 "userId": userId,
                 "hasBilling": False,
                 "token": token.key
-            }, status.HTTP_200_OK
-
-
-def user_verify(request):
-    """
-            Авторизация пользователя:
-
-            Запрос:
-            >{
-                "userId": "01-000000000000003",
-                "password": "crjhgbjy303",
-                "username": "test3"
             }
 
-            Ответ:
-            >{
-                "userId": "01-000000000000003",
-                "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
-            }
+
+class UserCreateVerify(APIResponse):
     """
-    if request.method == 'POST':
-        data = json.loads(request.body.decode("utf-8"))
+    Авторизация пользователя:
+        Запрос:
+        >{
+            "userId": "01-000000000000003",
+            "password": "crjhgbjy303",
+            "username": "test3"
+        }
+        Ответ:
+        >{
+            "userId": "01-000000000000003",
+            "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
+        }
+    """
+    def action(self, data):
         userId = data['userId']
         token = Token.objects.get(user=userId)
-        return APIResponse.response(status.HTTP_200_OK)
-    else:
-        APIResponse.response(status.HTTP_400_BAD_REQUEST)
+        return {
+                "userId": userId,
+                "hasBilling": False,
+                "token": token.key
+            }
 
 
 """
