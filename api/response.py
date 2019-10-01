@@ -22,7 +22,7 @@ class APIResponse(View):
     def response(message, http_status):
         return JsonResponse(
             # неверный токен облака Эвотор.
-            message=message,
+            message,
             status=http_status,
             safe=False)
 
