@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 # from rest_framework import routers
+from django.views.decorators.csrf import csrf_exempt
+
 from . import views
 from users.models import User
 
@@ -24,7 +26,7 @@ from api import serializers
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    url(r'^user/create/$', views.UserCreateView.as_view()),
+    url(r'^user/create/$', csrf_exempt(views.UserCreateView.as_view()), name="create"),
     # url(r'^user/verify/$', views.user_create.as_view()),
 
     #url(r'^stores/$', views.StoreList.as_view()),

@@ -47,12 +47,9 @@ def user_verify(request):
         data = json.loads(request.body.decode("utf-8"))
         userId = data['userId']
         token = Token.objects.get(user=userId)
-        return APIResponse.response({
-            "userId": userId,
-            "token": token.key
-        }, status.HTTP_200_OK)
+        return APIResponse.response(status.HTTP_200_OK)
     else:
-        APIResponse.response("Ошибка в запросе- не POST", status.HTTP_400_BAD_REQUEST)
+        APIResponse.response(status.HTTP_400_BAD_REQUEST)
 
 
 """

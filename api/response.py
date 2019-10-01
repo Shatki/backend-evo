@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 import json
+from functools import update_wrapper
+
+from django.utils.decorators import classonlymethod
 
 import status
 from evotor import settings
 from django.views.generic.base import View
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection, models, transaction
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 from users.models import User, Token
 
@@ -17,15 +20,17 @@ class APIResponse(View):
 
     @staticmethod
     def response(message, http_status):
-        return csrf_exempt(JsonResponse(
+        return JsonResponse(
             # неверный токен облака Эвотор.
-            message, status=http_status))
+            message=message,
+            status=http_status,
+            safe=False)
 
     def action(self, data):
         return data, status.HTTP_200_OK
 
-    @csrf_exempt
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+        # print request.META.get('HTTP_AUTHORIZATION')
         if request.method == 'POST':
             try:
                 token = request.META.get('HTTP_AUTHORIZATION').split(" ")
@@ -43,7 +48,8 @@ class APIResponse(View):
                 #
                 # false - на стороне Эвотор
                 message, http_status = self.action(data)
-                return self.response(message, http_status)
+
+                return self.response(message, http_status=http_status)  # ????
             else:
                 return self.response({
                     # неверный тип токена, нужен 'Bearer'
@@ -55,19 +61,3 @@ class APIResponse(View):
                 # Метод не POST
                 'errors': 'Разрешен только POST запрос'
             }, status.HTTP_400_BAD_REQUEST)
-
-    @classmethod
-    def as_view(cls, **initkwargs):
-        """
-        Store the original class on the view function.
-
-        This allows us to discover information about the view when we do URL
-        reverse lookups.  Used for breadcrumb generation.
-        """
-        view = super(APIResponse, cls).as_view(**initkwargs)
-        view.cls = cls
-        view.initkwargs = initkwargs
-
-        # Note: session based authentication is explicitly CSRF validated,
-        # all other authentication is CSRF exempt.
-        return csrf_exempt(view)
