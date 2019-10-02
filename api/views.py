@@ -8,8 +8,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
-import status
-from .response import APIResponse
+from .response import APIResponse, status
 from users.models import User, Token
 from applications.models import Subscription, InstallationEvent, Installation
 from stores.models import Store
@@ -19,6 +18,8 @@ class UserCreateView(APIResponse):
     def action(self, data):
         userId = data['userId']
         token = Token.objects.get(user=userId)
+
+
         return {
                 "userId": userId,
                 "hasBilling": False,
@@ -46,7 +47,6 @@ class UserCreateVerify(APIResponse):
         token = Token.objects.get(user=userId)
         return {
                 "userId": userId,
-                "hasBilling": False,
                 "token": token.key
             }
 

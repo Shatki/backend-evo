@@ -16,19 +16,18 @@ from users.models import User, Token
 
 class APIResponse(View):
     def __init__(self):
-        self._evotor_type_token = 'Bearer'
-        self._evotor_token = settings.EVOTOR_TOKEN
-        self._errors = []
-        self._message = []
+        self.evotor_type_token = 'Bearer'
+        self.evotor_token = settings.EVOTOR_TOKEN
+        self.errors = []
         self._status = status.HTTP_200_OK
         super(APIResponse, self).__init__()
 
     def response(self, message):
-        if len(self._errors) > 0:
+        if len(self.errors) > 0:
             return JsonResponse(
                 # неверный токен облака Эвотор.
                 {
-                    "errors": self._errors
+                    "errors": self.errors
                 },
                 status=self._status,
                 safe=False)
@@ -39,16 +38,18 @@ class APIResponse(View):
                 status=status.HTTP_200_OK,
                 safe=False)
 
-    def add_error(self, error):
-        self._errors.append({
-            "code": error
+    def add_error(self, code, reason=None, subject=None):
+        self.errors.append({
+            "code": code,
+            "reason": reason,
+            "subject": subject
         })
         # Тут алгоритм присвоения статуса кода ответа
-        if error == status.ERROR_CODE_1001_WRONG_TOKEN:
+        if code == status.ERROR_CODE_1001_WRONG_TOKEN:
             self._status = status.HTTP_401_UNAUTHORIZED
-        elif error == status.ERROR_CODE_1006_WRONG_DATA:
+        elif code == status.ERROR_CODE_1006_WRONG_DATA:
             self._status = status.HTTP_401_UNAUTHORIZED
-        elif error == status.ERROR_CODE_2004_USER_EXIST:
+        elif code == status.ERROR_CODE_2004_USER_EXIST:
             self._status = status.HTTP_409_CONFLICT
         else:
             self._status = status.HTTP_400_BAD_REQUEST
@@ -63,7 +64,7 @@ class APIResponse(View):
             except:
                 self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN)
                 return self.response({})
-            if token[0] == self._evotor_type_token and token[1] == self._evotor_token:
+            if token[0] == self.evotor_type_token and token[1] == self.evotor_token:
                 data = json.loads(request.body.decode("utf-8"))
                 # hasBilling: boolean (Required)
                 # Определяет, на чьей стороне производится биллинг по данному пользователю.
@@ -75,6 +76,7 @@ class APIResponse(View):
                 # Все удачно, - возвращаем ответ 200
                 return self.response(self.action(data))
             else:
+                # Возможно не Bearer?
                 self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN)
                 return self.response({})
 
