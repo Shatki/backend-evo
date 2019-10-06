@@ -88,7 +88,8 @@ class Token(models.Model):
             self.key = self.generate_key()
         return super(Token, self).save(*args, **kwargs)
 
-    def generate_key(self):
+    @staticmethod
+    def generate_key():
         return binascii.hexlify(os.urandom(20)).decode()
 
     def __str__(self):

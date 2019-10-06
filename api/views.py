@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from evotor.settings import EVOTOR_TOKEN
 from datetime import datetime
 import json
+from django.db.utils import IntegrityError
 
 from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404
@@ -15,11 +16,50 @@ from stores.models import Store
 
 
 class UserCreateView(APIResponse):
+    """
+        Регистрация учетной записи пользователя:
+            Запрос:
+            >{
+                "userId": "01-000000000000003",
+                "password": "crjhgbjy303",
+                "username": "test3",
+                "customField": "Дополнительные данные о пользователе"
+            }
+            Ответ:
+            >{
+                "userId": "01-000000000000003",
+                "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
+            }
+        """
     def action(self, data):
-        userId = data['userId']
-        token = Token.objects.get(user=userId)
+        userId = self.get_data('userId')
+        password = self.get_data('password')
+        username = self.get_data('username')
 
+        if userId is None or password is None or username is None:
+            return None
 
+        try:
+            user = User.objects.create(userId=userId, username=username)
+        except Exception as e:
+            reason, subject = self.decode_exception(e)
+            self.add_error(status.ERROR_CODE_2005_USER_EXIST,
+                           reason=reason,
+                           subject=subject or "user")
+            return None
+        else:
+            user.set_password(password)
+            user.save()
+
+        token = self.create_token(user=user)
+        # hasBilling: boolean (Required)
+        # Определяет, на чьей стороне производится биллинг по данному пользователю.
+        #
+        # true - в стороннем сервисе
+        #
+        # false - на стороне Эвотор
+
+        # Все удачно, - возвращаем ответ 200
         return {
                 "userId": userId,
                 "hasBilling": False,
@@ -43,8 +83,19 @@ class UserCreateVerify(APIResponse):
         }
     """
     def action(self, data):
-        userId = data['userId']
-        token = Token.objects.get(user=userId)
+        userId = self.get_data('userId')
+        password = self.get_data('password')
+        username = self.get_data('username')
+        # Можно добавить и другие поля
+
+        if userId is None or password is None or username is None:
+            return None
+
+        token = self.get_token(user=userId)
+
+        if token is None:
+            return None
+
         return {
                 "userId": userId,
                 "token": token.key

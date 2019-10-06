@@ -16,13 +16,14 @@ from users.models import User, Token
 
 class APIResponse(View):
     def __init__(self):
-        self.evotor_type_token = 'Bearer'
+        self.evotor_type_token = 'bearer'
         self.evotor_token = settings.EVOTOR_TOKEN
         self.errors = []
         self._status = status.HTTP_200_OK
+        self._data = []
         super(APIResponse, self).__init__()
 
-    def response(self, message):
+    def response(self, message=None):
         if len(self.errors) > 0:
             return JsonResponse(
                 # неверный токен облака Эвотор.
@@ -38,50 +39,107 @@ class APIResponse(View):
                 status=status.HTTP_200_OK,
                 safe=False)
 
+    @staticmethod
+    def decode_exception(exception):
+        e = exception.args[0].split(': ')
+        return e[0] if e[0] is not None else "Unexpected", e[1] if len(e) > 1 else None
+
     def add_error(self, code, reason=None, subject=None):
+        # Тут алгоритм присвоения статуса кода ответа
+        try:
+            self._status = status.errors[code]
+        except KeyError as e:
+            reason = e.args[0]
+            subject = "undefined unit"
+            # можно также присвоить значение по умолчанию вместо бросания исключения
+            self._status = status.HTTP_400_BAD_REQUEST
+
         self.errors.append({
             "code": code,
+            # Причина возникновения ошибки
             "reason": reason,
+            # Название неизвестного или отсутствующего поля
             "subject": subject
         })
-        # Тут алгоритм присвоения статуса кода ответа
-        if code == status.ERROR_CODE_1001_WRONG_TOKEN:
-            self._status = status.HTTP_401_UNAUTHORIZED
-        elif code == status.ERROR_CODE_1006_WRONG_DATA:
-            self._status = status.HTTP_401_UNAUTHORIZED
-        elif code == status.ERROR_CODE_2004_USER_EXIST:
-            self._status = status.HTTP_409_CONFLICT
-        else:
-            self._status = status.HTTP_400_BAD_REQUEST
 
     def action(self, data):
         pass
+
+    def get_data(self, field):
+        """
+        :param field: Запрашиваемое поле
+        :return: validated_data
+        """
+        try:
+            field_data = self._data[field]
+            if field_data is None:
+                # JSON Поле есть, но оно пустое
+                self.add_error(status.ERROR_CODE_2002_FIELDS_ERROR,
+                               reason="missing data",
+                               subject=field,
+                               )
+                return None
+        except Exception as e:
+            # Совсем отсутствует JSON поле
+            self.add_error(status.ERROR_CODE_2002_FIELDS_ERROR,
+                           reason="missing field",
+                           subject=e.args[0],
+                           )
+            return None
+        else:
+            return field_data
+
+    def get_token(self, user):
+        try:
+            return Token.objects.get(user=user)
+        except Exception as e:
+            reason, subject = self.decode_exception(e)
+            # эту ошибку нужно записать в логи
+            self.add_error(status.ERROR_CODE_3000_DB_ERROR,
+                           reason=reason,
+                           subject=subject or "db")
+            return None
+
+    def create_token(self, user):
+        try:
+            return Token.objects.create(user=user)
+        except Exception as e:
+            reason, subject = self.decode_exception(e)
+            self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN,
+                           reason=reason,
+                           subject=subject or "token")
+            return None
 
     def post(self, request, *args, **kwargs):
         if request.method == 'POST':
             try:
                 token = request.META.get('HTTP_AUTHORIZATION').split(" ")
-            except:
-                self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN)
-                return self.response({})
-            if token[0] == self.evotor_type_token and token[1] == self.evotor_token:
-                data = json.loads(request.body.decode("utf-8"))
-                # hasBilling: boolean (Required)
-                # Определяет, на чьей стороне производится биллинг по данному пользователю.
-                #
-                # true - в стороннем сервисе
-                #
-                # false - на стороне Эвотор
+            except Exception as e:
+                self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN,
+                               reason=e.args[0],
+                               subject="token")
+                return self.response()
+            # Проверяем наличие перед токеном типа
+            if len(token) != 2 or token[0].lower() != self.evotor_type_token:
+                self.add_error(status.ERROR_CODE_2001_SYNTAX_ERROR,
+                               reason="unknown type. Example: 'Bearer evotor_token'",
+                               subject="token")
+                return self.response()
 
-                # Все удачно, - возвращаем ответ 200
-                return self.response(self.action(data))
+            if token[1] == self.evotor_token:
+                try:
+                    self._data = json.loads(request.body.decode("utf-8"))
+                except ValueError as e:
+                    self.add_error(status.ERROR_CODE_2001_SYNTAX_ERROR,
+                                   reason=e.args[0],
+                                   subject="JSON request")
+                    return self.response()
+                # Вызываем основное действие
+                return self.response(self.action(self._data))
             else:
-                # Возможно не Bearer?
+                # Не верный токен?
                 self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN)
-                return self.response({})
-
-                # errors.add(status.ERROR_CODE_1001_WRONG_TOKEN)
-                # return self.response()
+                return self.response()
         else:
-            self.add_error(status.ERROR_CODE_2002_BAD_REQUEST)
-            return self.response({})
+            self.add_error(status.ERROR_CODE_2001_SYNTAX_ERROR)
+            return self.response()
