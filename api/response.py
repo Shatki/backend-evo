@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
-from functools import update_wrapper
-
-from django.utils.decorators import classonlymethod
-
 import status
 from evotor import settings
 from django.views.generic.base import View
-from django.views.decorators.csrf import csrf_exempt
 from django.db import connection, models, transaction
 from django.http import JsonResponse, HttpResponse
-
 from users.models import User, Token
 
 
