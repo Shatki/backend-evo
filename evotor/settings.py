@@ -24,8 +24,6 @@ FILES_DIR = os.path.dirname(os.path.join(os.path.expanduser('~'), FILES))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'dh-=q^q_14f28ams(_(7=yb)yvcaf9letw*@u8_2gc)np1a=ak'
-EVOTOR_TOKEN = '113d539530237fc6797df463ea0c5fbcf12fcd62'
-# 4d01c1a301068abca70fb7bd32a370479c511f4c
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -64,6 +62,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 ]
+
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
+
+# Токен указывающийся на вкладке интеграция приложения в Облаке Эвотора
+AUTH_TOKEN_EVOTOR = '113d539530237fc6797df463ea0c5fbcf12fcd62'
+# 4d01c1a301068abca70fb7bd32a370479c511f4c
+AUTH_TOKEN_TYPE = b'bearer'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 

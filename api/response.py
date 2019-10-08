@@ -5,13 +5,19 @@ from evotor import settings
 from django.views.generic.base import View
 from django.db import connection, models, transaction
 from django.http import JsonResponse, HttpResponse
-from users.models import User, Token
+from users.models import User
+from api.models import Token
+
+from jose import jwt
+from django.http import HttpResponse
+import datetime
+from django.contrib.auth import authenticate
 
 
 class APIResponse(View):
     def __init__(self):
-        self.evotor_type_token = 'bearer'
-        self.evotor_token = settings.EVOTOR_TOKEN
+        self.evotor_type_token = settings.AUTH_TOKEN_TYPE
+        self.evotor_token = settings.AUTH_TOKEN_EVOTOR
         self.errors = []
         self._status = status.HTTP_200_OK
         self._data = []
@@ -95,8 +101,16 @@ class APIResponse(View):
             return None
 
     def create_token(self, user):
+        user = authenticate(username=username, password=password)
+        expiry = datetime.date.today() + datetime.timedelta(days=50)
+        payload = {
+            'username': user.username,
+            'expiry': expiry
+        }
+        token = jwt.encode(payload, 'seKre8', algorithm='HS256')
+
         try:
-            return Token.objects.create(user=user)
+            return Token.objects.create(user=user, key=token)
         except Exception as e:
             reason, subject = self.decode_exception(e)
             self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN,
@@ -135,5 +149,5 @@ class APIResponse(View):
                 self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN)
                 return self.response()
         else:
-            self.add_error(status.ERROR_CODE_2001_SYNTAX_ERROR)
+            self.add_error(status.ERROR_CODE_2003_REQUEST_ERROR)
             return self.response()

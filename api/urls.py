@@ -14,20 +14,15 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url, include
-# from rest_framework import routers
+from django.conf.urls import url
 from django.views.decorators.csrf import csrf_exempt
-
 from . import views
-from users.models import User
-
-from api import serializers
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     url(r'^user/create/$', csrf_exempt(views.UserCreateView.as_view()), name="create"),
-    url(r'^user/verify/$', csrf_exempt(views.UserCreateVerify.as_view()), name="verify"),
+    url(r'^user/verify/$', csrf_exempt(views.UserVerifyView.as_view()), name="verify"),
 
     #url(r'^stores/$', views.StoreList.as_view()),
     #url(r'^stores/(?P<uuid>[0-9A-Fa-f-]+/$)', views.StoreDetail.as_view()),

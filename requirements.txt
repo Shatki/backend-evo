@@ -1,8 +1,9 @@
 Django==1.11.22
 Django-debug-toolbar
 Markdown
-django-filter
+Django-filter
 Pillow
-django-ckeditor
-django-cors-headers==2.5.2
-django-unixdatetimefield
+Django-ckeditor
+Django-cors-headers==2.5.2
+Django-unixdatetimefield
+Python-jose[cryptography]

@@ -690,7 +690,7 @@ barcode_id</ColNames>
     </column>
     <column id="161" parent="23" name="user_id">
       <Position>3</Position>
-      <DataType>integer|0s</DataType>
+      <DataType>bigint|0s</DataType>
       <NotNull>1</NotNull>
     </column>
     <index id="162" parent="23" name="sqlite_autoindex_tokens_1">
@@ -716,8 +716,8 @@ barcode_id</ColNames>
     </key>
     <foreign-key id="166" parent="23">
       <ColNames>user_id</ColNames>
-      <RefTableName>users_user</RefTableName>
-      <RefColNames>id</RefColNames>
+      <RefTableName>users</RefTableName>
+      <RefColNames>userId</RefColNames>
     </foreign-key>
     <column id="167" parent="24" name="password">
       <Position>1</Position>

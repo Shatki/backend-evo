@@ -89,10 +89,12 @@ ERROR_CODE_1003_USER_TOKEN_EXPIRED = 1003
 # 1004/402 - Наш сервис возвращает этот код,
 # если у пользователя приложения истекла подписка в нашем сервисе.
 ERROR_CODE_1004_PAYMENT_REQUIRED = 1004
-# 1005/405 На устройство не распространяется лицензия (reason: "not allowed").
+# 1005/405 Терминал не активен в рамках текущей подписки. Активируйте терминал и попробуйте ещё раз.
 ERROR_CODE_1005_NOT_ALLOWED = 1005
-# 1006/401 - пользователь указал неверные данные при авторизации в стороннем сервисе
+# 1006/401 - Пользователь указал неверные данные при авторизации в стороннем сервисе
 ERROR_CODE_1006_WRONG_DATA = 1006
+# 1007/405 - Лицензированных терминалов недостаточно для активации в рамках тарифа.
+ERROR_CODE_1007_LICENSE_OVERHEAD = 1007
 
 # 2001/400 - cинтаксическая ошибка в запросе
 ERROR_CODE_2001_SYNTAX_ERROR = 2001
@@ -100,9 +102,9 @@ ERROR_CODE_2001_SYNTAX_ERROR = 2001
 ERROR_CODE_2002_FIELDS_ERROR = 2002
 # 2003/400 - параметры запроса содержат недопустимые значения.
 ERROR_CODE_2003_REQUEST_ERROR = 2003
-# 2004/400 - в стороннем сервисе userUuid ассоциирован с другой учётной записью пользователя Эвотора
+# 2004/409 - в стороннем сервисе userUuid ассоциирован с другой учётной записью пользователя Эвотора
 ERROR_CODE_2004_USER_EXIST = 2004
-# 2005/400 - В стороннем сервисе уже зарегистрирована учётная запись с указанными данными
+# 2005/409 - В стороннем сервисе уже зарегистрирована учётная запись с указанными данными
 ERROR_CODE_2005_USER_EXIST = 2005
 
 # 3000/500 - Ошибка в базе данных
@@ -110,9 +112,12 @@ ERROR_CODE_3000_DB_ERROR = 3000
 
 errors = {
     ERROR_CODE_1001_WRONG_TOKEN: HTTP_401_UNAUTHORIZED,
+    ERROR_CODE_1002_WRONG_USER_TOKEN: HTTP_401_UNAUTHORIZED,
+    ERROR_CODE_1003_USER_TOKEN_EXPIRED: HTTP_401_UNAUTHORIZED,
     ERROR_CODE_1004_PAYMENT_REQUIRED: HTTP_402_PAYMENT_REQUIRED,
     ERROR_CODE_1005_NOT_ALLOWED: HTTP_405_METHOD_NOT_ALLOWED,
     ERROR_CODE_1006_WRONG_DATA: HTTP_401_UNAUTHORIZED,
+    ERROR_CODE_1007_LICENSE_OVERHEAD: HTTP_405_METHOD_NOT_ALLOWED,
     ERROR_CODE_2001_SYNTAX_ERROR: HTTP_400_BAD_REQUEST,
     ERROR_CODE_2002_FIELDS_ERROR: HTTP_400_BAD_REQUEST,
     ERROR_CODE_2003_REQUEST_ERROR: HTTP_400_BAD_REQUEST,

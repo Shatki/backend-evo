@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .forms import UserCreationForm, UserChangeForm
-from .models import User, Token
+from .models import User
 
 
 @admin.register(User)
@@ -85,19 +85,4 @@ class UserAdmin(UserAdmin):
     filter_horizontal = (
         'groups',
         'user_permissions',
-    )
-
-
-@admin.register(Token)
-class TokenAdmin(admin.ModelAdmin):
-    model = Token
-    list_display = (
-        'key',
-        'user',
-        'created'
-    )
-
-    readonly_fields = (
-        'key',
-        'created',
     )

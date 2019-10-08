@@ -10,7 +10,8 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
 from .response import APIResponse, status
-from users.models import User, Token
+from users.models import User
+from api.models import Token
 from applications.models import Subscription, InstallationEvent, Installation
 from stores.models import Store
 
@@ -21,8 +22,8 @@ class UserCreateView(APIResponse):
             Запрос:
             >{
                 "userId": "01-000000000000003",
-                "password": "crjhgbjy303",
-                "username": "test3",
+                *"password": "crjhgbjy303",
+                *"username": "test3",
                 "customField": "Дополнительные данные о пользователе"
             }
             Ответ:
@@ -52,22 +53,15 @@ class UserCreateView(APIResponse):
             user.save()
 
         token = self.create_token(user=user)
-        # hasBilling: boolean (Required)
-        # Определяет, на чьей стороне производится биллинг по данному пользователю.
-        #
-        # true - в стороннем сервисе
-        #
-        # false - на стороне Эвотор
 
         # Все удачно, - возвращаем ответ 200
         return {
                 "userId": userId,
-                "hasBilling": False,
                 "token": token.key
             }
 
 
-class UserCreateVerify(APIResponse):
+class UserVerifyView(APIResponse):
     """
     Авторизация пользователя:
         Запрос:
@@ -92,12 +86,19 @@ class UserCreateVerify(APIResponse):
             return None
 
         token = self.get_token(user=userId)
+        # hasBilling: boolean (Required)
+        # Определяет, на чьей стороне производится биллинг по данному пользователю.
+        #
+        # true - в стороннем сервисе
+        #
+        # false - на стороне Эвотор
 
         if token is None:
             return None
 
         return {
                 "userId": userId,
+                "hasBilling": False,
                 "token": token.key
             }
 
