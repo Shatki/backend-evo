@@ -14,12 +14,15 @@ from django.contrib.auth import authenticate
 
 
 class APIResponse(JsonResponse):
-    def __init__(self, data=None, code=None, reason=None, subject=None, *arg, **kwargs):
+    def __init__(self, data=None, status_code=status.HTTP_200_OK,
+                 code=None, reason=None, subject=None, **kwargs):
         self.data = data
         self.errors = []
+        self.status_code = status_code
         if code:
             self.add_error(code=code, reason=reason, subject=subject)
-        super(APIResponse, self).__init__(self, content=self.data, safe=False, *arg, **kwargs)
+        super(APIResponse, self).__init__(self, content=self.data, status_code=self.status_code,
+                                          safe=False, **kwargs)
 
     def __unicode__(self):
         return self.response()
@@ -28,14 +31,19 @@ class APIResponse(JsonResponse):
         return self.response()
 
     def response(self):
+        """
+        Создание ответа API
+        Метод класса для формирования ответа из данных класса
+        :return: None
+        """
         if len(self.errors) > 0:
-            # неверный токен облака Эвотор.
+            # Если есть ошибки, то формируем ответ с информацией об ошибках
             super(APIResponse, self).content = {
                 "errors": self.errors
             }
             super(APIResponse, self).status_code = self.status_code
         else:
-                # неверный токен облака Эвотор.
+            # Если ошибок нет, то отправляем нормальный ответ с требуемыми данными
                 super(APIResponse, self).content = self.data
                 super(APIResponse, self).status_code = status.HTTP_200_OK
 
@@ -56,6 +64,7 @@ class APIResponse(JsonResponse):
             # Название неизвестного или отсутствующего поля
             "subject": subject
         })
+        self.response()
 
 
 class APIView(View):
