@@ -9,19 +9,63 @@ from users.models import User
 from api.models import Token
 
 from jose import jwt
-from django.http import HttpResponse
 import datetime
 from django.contrib.auth import authenticate
 
 
-class APIResponse(View):
+class APIResponse(JsonResponse):
+    def __init__(self, data=None, code=None, reason=None, subject=None, *arg, **kwargs):
+        self.data = data
+        self.errors = []
+        if code:
+            self.add_error(code=code, reason=reason, subject=subject)
+        super(APIResponse, self).__init__(self, content=self.data, safe=False, *arg, **kwargs)
+
+    def __unicode__(self):
+        return self.response()
+
+    def __str__(self):
+        return self.response()
+
+    def response(self):
+        if len(self.errors) > 0:
+            # неверный токен облака Эвотор.
+            super(APIResponse, self).content = {
+                "errors": self.errors
+            }
+            super(APIResponse, self).status_code = self.status_code
+        else:
+                # неверный токен облака Эвотор.
+                super(APIResponse, self).content = self.data
+                super(APIResponse, self).status_code = status.HTTP_200_OK
+
+    def add_error(self, code, reason=None, subject=None):
+        # Тут алгоритм присвоения статуса кода ответа
+        try:
+            self.status_code = status.errors[code]
+        except KeyError as e:
+            reason = e.args[0]
+            subject = "undefined unit"
+            # можно также присвоить значение по умолчанию вместо бросания исключения
+            self.status_code = status.HTTP_400_BAD_REQUEST
+
+        self.errors.append({
+            "code": code,
+            # Причина возникновения ошибки
+            "reason": reason,
+            # Название неизвестного или отсутствующего поля
+            "subject": subject
+        })
+
+
+class APIView(View):
     def __init__(self):
         self.evotor_type_token = settings.AUTH_TOKEN_TYPE
         self.evotor_token = settings.AUTH_TOKEN_EVOTOR
         self.errors = []
         self._status = status.HTTP_200_OK
         self._data = []
-        super(APIResponse, self).__init__()
+        super(APIView, self).__init__()
 
     def response(self, message=None):
         if len(self.errors) > 0:
@@ -67,6 +111,8 @@ class APIResponse(View):
 
     def get_data(self, field):
         """
+        Запрашивает поля сданными из request
+
         :param field: Запрашиваемое поле
         :return: validated_data
         """

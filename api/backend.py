@@ -1,4 +1,5 @@
 from .models import Token
+from jose import jwt
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -38,7 +39,7 @@ class JWTAuthentication(object):
             return None
 
         try:
-            token = auth[1].decode()
+            token = auth[1].decode("utf-8")
         except UnicodeError:
             msg = _('Invalid token header. Token string should not contain invalid characters.')
             raise exceptions.AuthenticationFailed(msg)

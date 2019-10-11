@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from evotor.settings import EVOTOR_TOKEN
+from evotor.settings import AUTH_TOKEN_EVOTOR
 from datetime import datetime
 import json
 from django.db.utils import IntegrityError
@@ -9,14 +9,14 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
-from .response import APIResponse, status
+from .response import APIView, status
 from users.models import User
 from api.models import Token
 from applications.models import Subscription, InstallationEvent, Installation
 from stores.models import Store
 
 
-class UserCreateView(APIResponse):
+class UserCreateView(APIView):
     """
         Регистрация учетной записи пользователя:
             Запрос:
@@ -61,7 +61,7 @@ class UserCreateView(APIResponse):
             }
 
 
-class UserVerifyView(APIResponse):
+class UserVerifyView(APIView):
     """
     Авторизация пользователя:
         Запрос:
