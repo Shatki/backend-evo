@@ -3,6 +3,7 @@ import json
 import status
 from evotor import settings
 from django.views.generic.base import View
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import connection, models, transaction
 from django.http import JsonResponse, HttpResponse
 from users.models import User
@@ -13,24 +14,22 @@ import datetime
 from django.contrib.auth import authenticate
 
 
-class APIResponse(JsonResponse):
-    def __init__(self, data=None, status_code=status.HTTP_200_OK,
-                 code=None, reason=None, subject=None, **kwargs):
+class APIResponse(HttpResponse):
+    def __init__(self, data=b'', status_code=status.HTTP_200_OK,
+                 error_code=None, reason=None, subject=None, **kwargs):
         self.data = data
+        self.content = b''
         self.errors = []
         self.status_code = status_code
-        if code:
-            self.add_error(code=code, reason=reason, subject=subject)
-        super(APIResponse, self).__init__(self, content=self.data, status_code=self.status_code,
-                                          safe=False, **kwargs)
+        if error_code:
+            self.add_error(error_code=error_code, reason=reason, subject=subject)
+        kwargs.setdefault('content_type', 'application/json')
+        super(APIResponse, self).__init__(content=self.content, status=self.status_code, **kwargs)
 
-    def __unicode__(self):
-        return self.response()
+    def to_json(self):
+        self.content = json.dumps(self.data, cls=DjangoJSONEncoder)
 
-    def __str__(self):
-        return self.response()
-
-    def response(self):
+    def make_response(self):
         """
         Создание ответа API
         Метод класса для формирования ответа из данных класса
@@ -38,33 +37,32 @@ class APIResponse(JsonResponse):
         """
         if len(self.errors) > 0:
             # Если есть ошибки, то формируем ответ с информацией об ошибках
-            super(APIResponse, self).content = {
+            self.data = {
                 "errors": self.errors
             }
-            super(APIResponse, self).status_code = self.status_code
+            self.status_code = self.status_code
         else:
             # Если ошибок нет, то отправляем нормальный ответ с требуемыми данными
-                super(APIResponse, self).content = self.data
-                super(APIResponse, self).status_code = status.HTTP_200_OK
+                self.status_code = status.HTTP_200_OK
 
-    def add_error(self, code, reason=None, subject=None):
+    def add_error(self, error_code, reason=None, subject=None):
         # Тут алгоритм присвоения статуса кода ответа
         try:
-            self.status_code = status.errors[code]
+            self.status_code = status.errors[error_code]
         except KeyError as e:
             reason = e.args[0]
             subject = "undefined unit"
             # можно также присвоить значение по умолчанию вместо бросания исключения
             self.status_code = status.HTTP_400_BAD_REQUEST
-
         self.errors.append({
-            "code": code,
+            "code": error_code,
             # Причина возникновения ошибки
             "reason": reason,
             # Название неизвестного или отсутствующего поля
             "subject": subject
         })
-        self.response()
+        self.make_response()
+        self.to_json()
 
 
 class APIView(View):

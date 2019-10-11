@@ -1,18 +1,12 @@
 # -*- coding: utf-8 -*-
 import datetime
-
 from django.utils.deprecation import MiddlewareMixin
-
+from django.utils.translation import ugettext_lazy as _
 from api import status
 from jose import jwt, JWTError
-
 from evotor import settings
-from django.http import HttpResponseBadRequest, JsonResponse
-from django.utils.translation import ugettext_lazy as _
 from users.models import User
 from api.response import APIResponse
-
-from .exeptions import TokenVerificationException
 
 
 class TokenMiddleware(MiddlewareMixin):
@@ -28,55 +22,65 @@ class TokenMiddleware(MiddlewareMixin):
 
     """
     def process_request(self, request):
-        auth_header = request.META.get('HTTP_AUTHORIZATION', b'').split()
+        auth_header = request.META.get('HTTP_AUTHORIZATION', b'')
+        if auth_header:
+            auth = auth_header.split(" ")
 
-        # Проверяем заголовок - должен быть Authorization: Bearer evotor_token
-        if not auth_header or auth_header[0].lower() != settings.AUTH_TOKEN_TYPE:
-            return None
+            # If they specified an invalid token, let them know.
+            # Проверяем заголовок - должен быть Authorization: Bearer evotor_token
+            if len(auth) != 2 or auth[0].lower() != settings.AUTH_TOKEN_TYPE:
+                return APIResponse(error_code=status.ERROR_CODE_1001_WRONG_TOKEN,
+                                   reason=_('Improperly formatted token.'),
+                                   subject="Authorization")
 
-        # If they specified an invalid token, let them know.
-        if len(auth_header) != 2:
-            return HttpResponseBadRequest("Improperly formatted token")
+            # Если в заголовке есть токен Облака Эвотор, то пропускаем
+            if auth[1] == settings.AUTH_TOKEN_EVOTOR:
+                return None
 
-        try:
-            token = auth_header[1].decode("utf-8")
-        except UnicodeError:
-            return APIResponse(code=status.ERROR_CODE_2003_REQUEST_ERROR,
-                               reason=_('Invalid token header. Token string should not contain invalid characters.'),
-                               subject="Authorization")
-
-        if token != settings.AUTH_TOKEN_EVOTOR:
-
-            # Вдруг пришел плохой токен?
+            # -----Далее внизу нужно тестировать---------
             try:
-                decoded_dict = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-            except JWTError as e:
-                return APIResponse(code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
-                                   reason=e.args[0],
-                                   subject="Token")
+                token = auth[1].decode("utf-8")
+            except UnicodeError:
+                return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
+                                   reason=_('Invalid token header. Token string should not contain invalid characters.'),
+                                   subject="Authorization")
 
-            username = decoded_dict.get('username', None)
-            expiry = decoded_dict.get('expiry', None)
+            if token != settings.AUTH_TOKEN_EVOTOR:
 
-            try:
-                user = User.objects.get(username=username)
-            except User.DoesNotExist:
-                return APIResponse(code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
-                                   reason=_('Invalid token.'),
-                                   subject="Token")
+                # Вдруг пришел плохой токен?
+                try:
+                    decoded_dict = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+                except JWTError as e:
+                    return APIResponse(error_code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
+                                       reason=e.args[0],
+                                       subject="Token")
 
-            if not user.is_active:
-                return APIResponse(code=status.ERROR_CODE_1006_WRONG_DATA,
-                                   reason=_('User inactive or deleted.'),
-                                   subject="User")
+                username = decoded_dict.get('username', None)
+                expiry = decoded_dict.get('expiry', None)
 
-            if expiry < datetime.date.today():
-                return APIResponse(code=status.ERROR_CODE_1003_USER_TOKEN_EXPIRED,
-                                   reason=_('Token Expired.'),
-                                   subject="Token")
+                try:
+                    user = User.objects.get(username=username)
+                except User.DoesNotExist:
+                    return APIResponse(error_code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
+                                       reason=_('Invalid token.'),
+                                       subject="Token")
 
-            # user = auth.authenticate(token=auth_header[1])
-            request.user = user
+                if not user.is_active:
+                    return APIResponse(error_code=status.ERROR_CODE_1006_WRONG_DATA,
+                                       reason=_('User inactive or deleted.'),
+                                       subject="User")
+
+                if expiry < datetime.date.today():
+                    return APIResponse(error_code=status.ERROR_CODE_1003_USER_TOKEN_EXPIRED,
+                                       reason=_('Token Expired.'),
+                                       subject="Token")
+
+                # user = auth.authenticate(token=auth_header[1])
+                request.user = user
+            else:
+                # Пришел токен Облака Эвотор
+                pass
         else:
-            # Пришел токен Облака Эвотор
-            pass
+            return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
+                               reason=_('Wrong Authorization data.'),
+                               subject="Authorization")
