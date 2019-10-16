@@ -4,6 +4,7 @@ import status
 from evotor import settings
 from django.views.generic.base import View
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils.translation import ugettext_lazy as _
 from django.db import connection, models, transaction
 from django.http import JsonResponse, HttpResponse
 from users.models import User
@@ -43,7 +44,7 @@ class APIResponse(HttpResponse):
             self.status_code = self.status_code
         else:
             # Если ошибок нет, то отправляем нормальный ответ с требуемыми данными
-                self.status_code = status.HTTP_200_OK
+            self.status_code = status.HTTP_200_OK
 
     def add_error(self, error_code, reason=None, subject=None):
         # Тут алгоритм присвоения статуса кода ответа
@@ -67,77 +68,40 @@ class APIResponse(HttpResponse):
 
 class APIView(View):
     def __init__(self):
-        self.evotor_type_token = settings.AUTH_TOKEN_TYPE
-        self.evotor_token = settings.AUTH_TOKEN_EVOTOR
-        self.errors = []
-        self._status = status.HTTP_200_OK
-        self._data = []
+        self.response = APIResponse()
+        self.data = None
         super(APIView, self).__init__()
-
-    def response(self, message=None):
-        if len(self.errors) > 0:
-            return JsonResponse(
-                # неверный токен облака Эвотор.
-                {
-                    "errors": self.errors
-                },
-                status=self._status,
-                safe=False)
-        else:
-            return JsonResponse(
-                # неверный токен облака Эвотор.
-                message,
-                status=status.HTTP_200_OK,
-                safe=False)
 
     @staticmethod
     def decode_exception(exception):
         e = exception.args[0].split(': ')
         return e[0] if e[0] is not None else "Unexpected", e[1] if len(e) > 1 else None
 
-    def add_error(self, code, reason=None, subject=None):
-        # Тут алгоритм присвоения статуса кода ответа
-        try:
-            self._status = status.errors[code]
-        except KeyError as e:
-            reason = e.args[0]
-            subject = "undefined unit"
-            # можно также присвоить значение по умолчанию вместо бросания исключения
-            self._status = status.HTTP_400_BAD_REQUEST
-
-        self.errors.append({
-            "code": code,
-            # Причина возникновения ошибки
-            "reason": reason,
-            # Название неизвестного или отсутствующего поля
-            "subject": subject
-        })
-
     def action(self, data):
         pass
 
     def get_data(self, field):
         """
-        Запрашивает поля сданными из request
-
+        Запрашивает поля с данными из request
         :param field: Запрашиваемое поле
         :return: validated_data
         """
         try:
-            field_data = self._data[field]
+            field_data = self.data[field]
+            # print field_data
             if field_data is None:
                 # JSON Поле есть, но оно пустое
-                self.add_error(status.ERROR_CODE_2002_FIELDS_ERROR,
-                               reason="missing data",
-                               subject=field,
-                               )
+                self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
+                                        reason="missing data",
+                                        subject=field,
+                                        )
                 return None
         except Exception as e:
             # Совсем отсутствует JSON поле
-            self.add_error(status.ERROR_CODE_2002_FIELDS_ERROR,
-                           reason="missing field",
-                           subject=e.args[0],
-                           )
+            self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
+                                    reason="missing field",
+                                    subject=e.args[0],
+                                    )
             return None
         else:
             return field_data
@@ -172,21 +136,18 @@ class APIView(View):
             return None
 
     def post(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            try:
-                token = request.META.get('HTTP_AUTHORIZATION').split(" ")
-            except Exception as e:
-                self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN,
-                               reason=e.args[0],
-                               subject="token")
-                return self.response()
-            # Проверяем наличие перед токеном типа
-            if len(token) != 2 or token[0].lower() != self.evotor_type_token:
-                self.add_error(status.ERROR_CODE_2001_SYNTAX_ERROR,
-                               reason="unknown type. Example: 'Bearer evotor_token'",
-                               subject="token")
-                return self.response()
+        if request.user.is_authenticated:
+            # Всю работу с токенами делает миддлварь
+            data = 'Мы авторизованы'
 
+        else:
+            # Не авторизованный пользователь
+            return APIResponse(error_code=status.ERROR_CODE_1006_WRONG_DATA,
+                               reason=_('Permission denied.'),
+                               subject="Authentication")
+
+
+"""
             if token[1] == self.evotor_token:
                 try:
                     self._data = json.loads(request.body.decode("utf-8"))
@@ -201,6 +162,4 @@ class APIView(View):
                 # Не верный токен?
                 self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN)
                 return self.response()
-        else:
-            self.add_error(status.ERROR_CODE_2003_REQUEST_ERROR)
-            return self.response()
+"""

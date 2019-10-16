@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from evotor.settings import AUTH_TOKEN_EVOTOR
-from datetime import datetime
 import json
-from django.db.utils import IntegrityError
 
-from django.contrib.auth import authenticate, login
-from django.shortcuts import get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
-
-from .response import APIView, status
+from django.utils.translation import ugettext_lazy as _
+from .response import APIView, APIResponse, status
 from users.models import User
 from api.models import Token
 from applications.models import Subscription, InstallationEvent, Installation
@@ -32,21 +26,47 @@ class UserCreateView(APIView):
                 "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
             }
         """
+
+    def post(self, request, *args, **kwargs):
+        # Получаем и преобразуем данные из request.body в JSON
+        try:
+            self.data = json.loads(request.body.decode("utf-8"))
+        except ValueError as e:
+            # reason, subject = self.decode_exception(e)
+            self.response.add_error(error_code=status.ERROR_CODE_2001_SYNTAX_ERROR,
+                                    reason=_(e.args[0]),
+                                    subject="JSON")
+            return self.response
+
+        if not request.user.is_authenticated:
+            # Всю работу с токенами делает миддлварь
+            userId = self.get_data('userId')
+            password = self.get_data('password')
+            username = self.get_data('username')
+
+            if userId is None or password is None or username is None:
+                self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
+                                        reason=_('Permission denied.'),
+                                        subject="Authentication")
+                return self.response
+
+        # Все удачно вернем данные
+        self.data = {
+            "userId": userId,
+            "token": password
+        }
+        self.to_json()
+
+        return self
+
     def action(self, data):
-        userId = self.get_data('userId')
-        password = self.get_data('password')
-        username = self.get_data('username')
-
-        if userId is None or password is None or username is None:
-            return None
-
         try:
             user = User.objects.create(userId=userId, username=username)
         except Exception as e:
             reason, subject = self.decode_exception(e)
-            self.add_error(status.ERROR_CODE_2005_USER_EXIST,
-                           reason=reason,
-                           subject=subject or "user")
+            self.response.add_error(status.ERROR_CODE_2005_USER_EXIST,
+                                    reason=reason,
+                                    subject=subject or "user")
             return None
         else:
             user.set_password(password)
@@ -56,9 +76,9 @@ class UserCreateView(APIView):
 
         # Все удачно, - возвращаем ответ 200
         return {
-                "userId": userId,
-                "token": token.key
-            }
+            "userId": userId,
+            "token": token.key
+        }
 
 
 class UserVerifyView(APIView):
@@ -76,6 +96,7 @@ class UserVerifyView(APIView):
             "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
         }
     """
+
     def action(self, data):
         userId = self.get_data('userId')
         password = self.get_data('password')
@@ -97,10 +118,10 @@ class UserVerifyView(APIView):
             return None
 
         return {
-                "userId": userId,
-                "hasBilling": False,
-                "token": token.key
-            }
+            "userId": userId,
+            "hasBilling": False,
+            "token": token.key
+        }
 
 
 """
@@ -124,4 +145,3 @@ class UserVerifyView(APIView):
 }
  
 """
-

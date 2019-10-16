@@ -62,7 +62,7 @@ class TokenMiddleware(MiddlewareMixin):
                     user = User.objects.get(username=username)
                 except User.DoesNotExist:
                     return APIResponse(error_code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
-                                       reason=_('Invalid token.'),
+                                       reason=_('Invalid user token.'),
                                        subject="Token")
 
                 if not user.is_active:
@@ -84,3 +84,4 @@ class TokenMiddleware(MiddlewareMixin):
             return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
                                reason=_('Wrong Authorization data.'),
                                subject="Authorization")
+
