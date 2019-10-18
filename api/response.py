@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import status
-from evotor import settings
+import evotor.settings as settings
 from django.views.generic.base import View
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext_lazy as _
@@ -10,7 +10,6 @@ from django.http import JsonResponse, HttpResponse
 from users.models import User
 from api.models import Token
 
-from jose import jwt
 import datetime
 from django.contrib.auth import authenticate
 
@@ -19,6 +18,8 @@ class APIResponse(HttpResponse):
     def __init__(self, data=b'', status_code=status.HTTP_200_OK,
                  error_code=None, reason=None, subject=None, **kwargs):
         self.data = data
+        if self.data is not None:
+            self.to_json()
         self.content = b''
         self.errors = []
         self.status_code = status_code
@@ -70,6 +71,9 @@ class APIView(View):
     def __init__(self):
         self.response = APIResponse()
         self.data = None
+        self.userId = None
+        self.username = None
+        self.password = None
         super(APIView, self).__init__()
 
     @staticmethod

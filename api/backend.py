@@ -1,5 +1,4 @@
 from .models import Token
-from jose import jwt
 from django.contrib.auth import get_user_model
 
 User = get_user_model()

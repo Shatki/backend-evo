@@ -23,7 +23,7 @@ FILES_DIR = os.path.dirname(os.path.join(os.path.expanduser('~'), FILES))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'dh-=q^q_14f28ams(_(7=yb)yvcaf9letw*@u8_2gc)np1a=ak'
+SECRET_KEY = b'dh-=q^q_14f28ams(_(7=yb)yvcaf9letw*@u8_2gc)np1a=ak'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -50,8 +50,72 @@ INSTALLED_APPS = [
     'products.apps.ProductsConfig',
 ]
 
+"""
+Порядок промежуточных слоёв
+
+Несколько советов о порядке промежуточных слоёв Django:
+
+    1 SecurityMiddleware
+
+    Должен следовать в начале списка промежуточных слоев, если вы используете SSL перенаправление, чтобы избежать обработки небезопасного запроса другими промежуточными слоями.
+
+    2 UpdateCacheMiddleware
+
+    Добавлять перед промежуточными слоями, которые могут изменить заголовок Vary (SessionMiddleware, GZipMiddleware, LocaleMiddleware).
+
+    3 GZipMiddleware
+
+    Добавлять перед промежуточными слоями, которые могут изменять или читать тело ответа.
+
+    После UpdateCacheMiddleware: изменяет заголовок Vary.
+
+    4 ConditionalGetMiddleware
+
+    Перед CommonMiddleware: использует установленный заголовок Etag при USE_ETAGS = True.
+
+    5 SessionMiddleware
+
+    После UpdateCacheMiddleware: изменяет заголовок Vary.
+
+    6 LocaleMiddleware
+
+    Следует одним из первых, после SessionMiddleware (использует сессию) и CacheMiddleware (изменяет заголовок Vary).
+
+    7 CommonMiddleware
+
+    Перед любым промежуточным слоем, который может изменять ответ (вычисляет ETags).
+
+    После GZipMiddleware, чтобы заголовок ETag не вычислялся для сжатого ответа.
+
+    Ближе к верху: выполняет перенаправление при APPEND_SLASH или PREPEND_WWW равном True.
+
+    8 CsrfViewMiddleware
+
+    Перед любым промежуточным слоем, который предполагает, что CSRF защита уже выполнена.
+
+    9 AuthenticationMiddleware
+
+    После SessionMiddleware: использует сессию.
+
+    10 MessageMiddleware
+
+    После SessionMiddleware: может использовать сессию для хранения данных.
+
+    11 FetchFromCacheMiddleware
+
+    После любого промежуточного слоя, который может изменить заголовок Vary: его значение используется для генерации ключа в кеше.
+
+    12 FlatpageFallbackMiddleware
+
+    Должен быть в низу.
+
+    13 RedirectFallbackMiddleware
+
+    Должен быть в низу.
+
+"""
+
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -70,6 +134,10 @@ AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 AUTH_TOKEN_EVOTOR = '113d539530237fc6797df463ea0c5fbcf12fcd62'
 # 4d01c1a301068abca70fb7bd32a370479c511f4c
 AUTH_TOKEN_TYPE = b'bearer'
+AUTH_TOKEN_EXPIRY_DAYS = 2
+AUTH_TOKEN_USER = 'User'
+AUTH_TOKEN_CLOUD = 'Cloud'
+AUTH_TOKEN_ANONYMOUS = 'Anonymous'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -178,6 +246,8 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+CODING = "utf-8"
 
 
 # Static files (CSS, JavaScript, Images)

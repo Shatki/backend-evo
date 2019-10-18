@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-import datetime
+from datetime import datetime
+import json
+import evotor.settings as settings
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext_lazy as _
 from api import status
-from jose import jwt, JWTError
-from evotor import settings
+from api.crypto import decrypt
 from users.models import User
 from api.response import APIResponse
 
@@ -22,6 +23,11 @@ class TokenMiddleware(MiddlewareMixin):
 
     """
     def process_request(self, request):
+        # Если в заголовке нет авторизации -> пропускаем на сайт без авторизации
+        request.META['AUTH_TOKEN'] = settings.AUTH_TOKEN_ANONYMOUS
+        if 'HTTP_AUTHORIZATION' not in request.META:
+            return None
+
         auth_header = request.META.get('HTTP_AUTHORIZATION', b'')
         if auth_header:
             auth = auth_header.split(" ")
@@ -32,31 +38,29 @@ class TokenMiddleware(MiddlewareMixin):
                 return APIResponse(error_code=status.ERROR_CODE_1001_WRONG_TOKEN,
                                    reason=_('Improperly formatted token.'),
                                    subject="Authorization")
-
-            # Если в заголовке есть токен Облака Эвотор, то пропускаем
-            if auth[1] == settings.AUTH_TOKEN_EVOTOR:
-                return None
-
-            # -----Далее внизу нужно тестировать---------
             try:
-                token = auth[1].decode("utf-8")
+                token = auth[1].decode(settings.CODING)
             except UnicodeError:
                 return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
                                    reason=_('Invalid token header. Token string should not contain invalid characters.'),
                                    subject="Authorization")
 
-            if token != settings.AUTH_TOKEN_EVOTOR:
-
+            # Если в заголовке есть токен Облака Эвотор, то пропускаем
+            if token == settings.AUTH_TOKEN_EVOTOR:
+                # Пришел токен Облака Эвотор
+                request.META['AUTH_TOKEN'] = settings.AUTH_TOKEN_CLOUD
+            else:
                 # Вдруг пришел плохой токен?
                 try:
-                    decoded_dict = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-                except JWTError as e:
+                    decoded_dict = json.loads(decrypt(token, settings.SECRET_KEY))
+                except Exception as e:
                     return APIResponse(error_code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
                                        reason=e.args[0],
                                        subject="Token")
 
-                username = decoded_dict.get('username', None)
-                expiry = decoded_dict.get('expiry', None)
+                userId = decoded_dict['id']
+                username = decoded_dict['usrnm']
+                expiry = decoded_dict['exp']
 
                 try:
                     user = User.objects.get(username=username)
@@ -70,16 +74,15 @@ class TokenMiddleware(MiddlewareMixin):
                                        reason=_('User inactive or deleted.'),
                                        subject="User")
 
-                if expiry < datetime.date.today():
+                if datetime.strptime(expiry, '%Y-%m-%d') < datetime.today():
                     return APIResponse(error_code=status.ERROR_CODE_1003_USER_TOKEN_EXPIRED,
                                        reason=_('Token Expired.'),
                                        subject="Token")
 
                 # user = auth.authenticate(token=auth_header[1])
                 request.user = user
-            else:
-                # Пришел токен Облака Эвотор
-                pass
+                request.META['AUTH_TOKEN'] = settings.AUTH_TOKEN_USER
+            return None
         else:
             return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
                                reason=_('Wrong Authorization data.'),

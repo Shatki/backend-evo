@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import datetime
 import json
+from api.crypto import encrypt, decrypt
+import evotor.settings as settings
 
 from django.utils.translation import ugettext_lazy as _
-from .response import APIView, APIResponse, status
+from .response import APIView, status
 from users.models import User
 from api.models import Token
 from applications.models import Subscription, InstallationEvent, Installation
@@ -22,63 +25,62 @@ class UserCreateView(APIView):
             }
             Ответ:
             >{
-                "userId": "01-000000000000003",
-                "token": "toaWaep4chou7ahkoogiu9Iusaht9ima"
-            }
+                "token": "TLWHR7jA7HzBDmoRzUpHteNyDPqAkOAc/DP81JuM0dXpq8h60X+W0jh+PEWe1jkmJq/C6iW6YYafYzVGxhM3PABuDgTHX3QMeUcVUYRB9K39y7WKxISibx5FSm4Ek8Ek",
+                "userId": "01-000000000000004"
+                }
+                2-х дневный
         """
-
     def post(self, request, *args, **kwargs):
-        # Получаем и преобразуем данные из request.body в JSON
-        try:
-            self.data = json.loads(request.body.decode("utf-8"))
-        except ValueError as e:
-            # reason, subject = self.decode_exception(e)
-            self.response.add_error(error_code=status.ERROR_CODE_2001_SYNTAX_ERROR,
-                                    reason=_(e.args[0]),
-                                    subject="JSON")
-            return self.response
-
-        if not request.user.is_authenticated:
-            # Всю работу с токенами делает миддлварь
-            userId = self.get_data('userId')
-            password = self.get_data('password')
-            username = self.get_data('username')
-
-            if userId is None or password is None or username is None:
-                self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
-                                        reason=_('Permission denied.'),
-                                        subject="Authentication")
+        if request.META['AUTH_TOKEN'] == settings.AUTH_TOKEN_CLOUD:
+            # Получаем и преобразуем данные из request.body в JSON
+            try:
+                self.data = json.loads(request.body.decode(settings.CODING))
+            except ValueError as e:
+                # reason, subject = self.decode_exception(e)
+                self.response.add_error(error_code=status.ERROR_CODE_2001_SYNTAX_ERROR,
+                                        reason=_(e.args[0]),
+                                        subject="JSON")
                 return self.response
 
-        # Все удачно вернем данные
-        self.data = {
-            "userId": userId,
-            "token": password
-        }
-        self.to_json()
+            if not request.user.is_authenticated:
+                # Всю работу с токенами делает миддлварь
+                self.userId = self.get_data('userId')
+                self.password = self.get_data('password')
+                self.username = self.get_data('username')
 
-        return self
+                if self.userId is None or self.password is None or self.username is None:
+                    self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
+                                            reason=_('Permission denied.'),
+                                            subject="Authentication")
+                    return self.response
 
-    def action(self, data):
-        try:
-            user = User.objects.create(userId=userId, username=username)
-        except Exception as e:
-            reason, subject = self.decode_exception(e)
-            self.response.add_error(status.ERROR_CODE_2005_USER_EXIST,
-                                    reason=reason,
-                                    subject=subject or "user")
-            return None
+            try:
+                user = User.objects.create(userId=self.userId, username=self.username)
+            except Exception as e:
+                reason, subject = self.decode_exception(e)
+                self.response.add_error(status.ERROR_CODE_2005_USER_EXIST,
+                                        reason=reason,
+                                        subject=subject or "user")
+                return self.response
+            else:
+                user.set_password(self.password)
+                user.save()
+
+                expiry = str(datetime.date.today() + datetime.timedelta(days=settings.AUTH_TOKEN_EXPIRY_DAYS))
+                payload = json.dumps({'id': user.userId, 'usrnm': user.username, 'exp': expiry})
+                token = encrypt(payload, settings.SECRET_KEY)
+
+            # Все удачно вернем данные
+            self.response.data = {
+                "userId": user.userId,
+                "token": token
+            }
+            self.response.to_json()
         else:
-            user.set_password(password)
-            user.save()
-
-        token = self.create_token(user=user)
-
-        # Все удачно, - возвращаем ответ 200
-        return {
-            "userId": userId,
-            "token": token.key
-        }
+            self.response.add_error(status.ERROR_CODE_1001_WRONG_TOKEN,
+                                    reason=_('Cloud token error'),
+                                    subject="Authentication")
+        return self.response
 
 
 class UserVerifyView(APIView):

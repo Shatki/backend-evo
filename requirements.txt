@@ -3,7 +3,7 @@ Django-debug-toolbar
 Markdown
 Django-filter
 Pillow
+six
+pycryptodome
 Django-ckeditor
-Django-cors-headers==2.5.2
 Django-unixdatetimefield
-Python-jose[cryptography]
