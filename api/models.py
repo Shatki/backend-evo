@@ -12,8 +12,9 @@ from django.db import models
 class Token(models.Model):
     """
     The default authorization token model.
+    f46b89a5-8e80-4591-b0aa-94551790444b
     """
-    key = models.CharField(_("Key"), max_length=40, primary_key=True)
+    key = models.CharField(_("Key"), max_length=40)
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, related_name='auth_token',
         on_delete=models.CASCADE, verbose_name=_("User")

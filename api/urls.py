@@ -18,11 +18,12 @@ from django.conf.urls import url
 from django.views.decorators.csrf import csrf_exempt
 from . import views
 
-# Wire up our API using automatic URL routing.
-# Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     url(r'^user/create/$', csrf_exempt(views.UserCreateView.as_view()), name="create"),
     url(r'^user/verify/$', csrf_exempt(views.UserVerifyView.as_view()), name="verify"),
+    url(r'^user/token/$', csrf_exempt(views.UserTokenView.as_view()), name="token"),
+
+    url(r'^subscription/event/$', csrf_exempt(views.SubscriptionEventView.as_view()), name="subscriptionEvent"),
 
     #url(r'^stores/$', views.StoreList.as_view()),
     #url(r'^stores/(?P<uuid>[0-9A-Fa-f-]+/$)', views.StoreDetail.as_view()),

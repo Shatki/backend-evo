@@ -302,8 +302,8 @@ class UserIdField(models.Field):
 
 class TimestampField(models.Field):
     """
-            ID field uses in evotor users' model
-        """
+        ID field uses in evotor users' model
+    """
     default_error_messages = {
         'invalid': _('“%(value)s” is not a valid timestamp.'),
     }
@@ -355,7 +355,7 @@ class TimestampField(models.Field):
             :param value: значение атрибута поля модели
             :return: Значение - параметр в запросе У нас это datetime
         """
-        print "get_prep_value", value, type(value)
+        # print "get_prep_value", value, type(value)
         value = super(TimestampField, self).get_prep_value(value)
         return self.to_python(value)
 
@@ -391,7 +391,7 @@ class TimestampField(models.Field):
             :param value: получаемое значение для преобразование в объект python
             :return: всегда возвращает объект python типа datetime
         """
-        print "to_python", value, type(value)
+        # print "to_python", value, type(value)
         if value is not None and not isinstance(value, datetime):
             try:
                 # обрезаем миллисекунды

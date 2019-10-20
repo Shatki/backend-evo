@@ -2,16 +2,14 @@
 import json
 import status
 import evotor.settings as settings
+from api.crypto import encrypt, decrypt
 from django.views.generic.base import View
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext_lazy as _
-from django.db import connection, models, transaction
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse
 from users.models import User
 from api.models import Token
-
 import datetime
-from django.contrib.auth import authenticate
 
 
 class APIResponse(HttpResponse):
@@ -68,12 +66,13 @@ class APIResponse(HttpResponse):
 
 
 class APIView(View):
+    """
+        Представление API
+        :return: self.response (объект HttpResponse)
+    """
     def __init__(self):
         self.response = APIResponse()
         self.data = None
-        self.userId = None
-        self.username = None
-        self.password = None
         super(APIView, self).__init__()
 
     @staticmethod
@@ -84,62 +83,74 @@ class APIView(View):
     def action(self, data):
         pass
 
-    def get_data(self, field):
+    def get_data(self, *args):
         """
-        Запрашивает поля с данными из request
-        :param field: Запрашиваемое поле
-        :return: validated_data
+            Запрашивает поля с данными из request(self.data)
+            :param args: Запрашиваемые поля
+            :return: validated_data
+            Todo: Валидацию полученных полей из запроса
         """
-        try:
-            field_data = self.data[field]
-            # print field_data
-            if field_data is None:
-                # JSON Поле есть, но оно пустое
+        validated_data = {}
+        for field in args:
+            try:
+                # Попытка получить поле из запроса
+                field_data = self.data[field]
+                # Валидация на непустое поле
+                if field_data is None:
+                    # JSON Поле есть, но оно пустое
+                    self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
+                                            reason="missing data",
+                                            subject=field,
+                                            )
+            except Exception as e:
+                # Совсем отсутствует JSON поле
                 self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
-                                        reason="missing data",
-                                        subject=field,
+                                        reason="missing field",
+                                        subject=e.args[0],
                                         )
-                return None
-        except Exception as e:
-            # Совсем отсутствует JSON поле
-            self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
-                                    reason="missing field",
-                                    subject=e.args[0],
-                                    )
-            return None
-        else:
-            return field_data
+            else:
+                validated_data.update({
+                    field: field_data
+                })
+
+        return validated_data if len(validated_data) == len(args) else None
 
     def get_token(self, user):
+        """
+            Получение токена пользователя для авторизации запросов к Облаку
+            :param user: пользователь
+            :return: токен пользователя для авторизации запросов к Облаку
+        """
         try:
             return Token.objects.get(user=user)
         except Exception as e:
             reason, subject = self.decode_exception(e)
             # эту ошибку нужно записать в логи
-            self.add_error(status.ERROR_CODE_3000_DB_ERROR,
-                           reason=reason,
-                           subject=subject or "db")
+            self.response.add_error(status.ERROR_CODE_3000_DB_ERROR,
+                                    reason=reason,
+                                    subject=subject or "db")
             return None
 
     def create_token(self, user):
-        user = authenticate(username=username, password=password)
-        expiry = datetime.date.today() + datetime.timedelta(days=50)
-        payload = {
-            'username': user.username,
-            'expiry': expiry
-        }
-        token = jwt.encode(payload, 'seKre8', algorithm='HS256')
-
-        try:
-            return Token.objects.create(user=user, key=token)
-        except Exception as e:
-            reason, subject = self.decode_exception(e)
-            self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN,
-                           reason=reason,
-                           subject=subject or "token")
-            return None
+        """
+            Создание токена пользователя для авторизации запросов из Облака
+            :param user: пользователь
+            :return: токен пользователя для авторизации запросов из Облака
+        """
+        if user is None:
+            raise ValueError(_('User cannot be Null'))
+        expiry = str(datetime.date.today() + datetime.timedelta(days=settings.AUTH_TOKEN_EXPIRY_DAYS))
+        payload = json.dumps({'id': user.userId, 'usrnm': user.username, 'exp': expiry})
+        return encrypt(payload, settings.SECRET_KEY)
 
     def post(self, request, *args, **kwargs):
+        """
+            ...Еще не разработана...
+            :param request:
+            :param args:
+            :param kwargs:
+            :return:
+        """
         if request.user.is_authenticated:
             # Всю работу с токенами делает миддлварь
             data = 'Мы авторизованы'
@@ -149,21 +160,3 @@ class APIView(View):
             return APIResponse(error_code=status.ERROR_CODE_1006_WRONG_DATA,
                                reason=_('Permission denied.'),
                                subject="Authentication")
-
-
-"""
-            if token[1] == self.evotor_token:
-                try:
-                    self._data = json.loads(request.body.decode("utf-8"))
-                except ValueError as e:
-                    self.add_error(status.ERROR_CODE_2001_SYNTAX_ERROR,
-                                   reason=e.args[0],
-                                   subject="JSON request")
-                    return self.response()
-                # Вызываем основное действие
-                return self.response(self.action(self._data))
-            else:
-                # Не верный токен?
-                self.add_error(status.ERROR_CODE_1001_WRONG_TOKEN)
-                return self.response()
-"""

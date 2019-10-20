@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django_unixdatetimefield import UnixDateTimeField
 
 import uuid
 from django.db import models
+from six import python_2_unicode_compatible
+
 from evotor.db import UserId, TimestampField
 from users.models import User
 from .constants import SUBSCRIPTION_TYPES, SUBSCRIPTION_TYPE_DEFAULT
 from .constants import APPLICATION_EVENT_DEFAULT, APPLICATION_EVENT_TYPES
 
 
+@python_2_unicode_compatible
 class Application(models.Model):
     class Meta:
         verbose_name = u'приложение'
@@ -17,9 +19,9 @@ class Application(models.Model):
         db_table = u'applications'
 
     uuid = models.UUIDField(verbose_name=u'идентификатор приложения', primary_key=True,
-                            unique=False, null=False, default=uuid.uuid4)
+                            unique=True, null=False, default=uuid.uuid4)
     name = models.CharField(verbose_name=u'наименование приложения', max_length=100,
-                            unique=True, null=False)
+                            unique=False, null=False, default=u'Неизвестное приложение')
     version = models.DecimalField(verbose_name=u'версия приложения', null=False, max_digits=4,
                                   decimal_places=2, default=0.1)
 
@@ -30,6 +32,7 @@ class Application(models.Model):
         return u'%s' % self.name
 
 
+@python_2_unicode_compatible
 class Subscription(models.Model):
     class Meta:
         verbose_name = u'подписка на приложение'
@@ -43,8 +46,8 @@ class Subscription(models.Model):
 
     # Идентификатор приложения.
     # "productId": "c0d01c35-5193-4cc2-9bfb-be20e0679498",
-    productId = models.UUIDField(verbose_name=u'идентификатор приложения', default=uuid.uuid4,
-                                 unique=True, null=False)
+    productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения', default=uuid.uuid4,
+                                  null=False)
 
     # Идентификатор пользователя в Облаке Эвотор.
     # "userId": "01-000000000000001",
@@ -53,7 +56,7 @@ class Subscription(models.Model):
 
     # Дата и время отправки события. В соответствовии с ISO 8601.
     # "timestamp": "2017-04-20T18:26:37.753+0000",
-    timestamp = UnixDateTimeField(verbose_name=u'дата и время отправки события')
+    timestamp = models.DateTimeField(verbose_name=u'дата и время отправки события')
 
     # Номер события в последовательности. Номер непрерывно возрастает начиная с единицы.
     # Необходим для соблюдения порядка обработки событий.
@@ -80,7 +83,7 @@ class Subscription(models.Model):
 
     # Идентификатор тарифа, который вы создаёте на портале разработчиков.
     # "planId": "example"
-    planId = models.CharField(verbose_name=u'идентификатор тарифа', max_length=30, default="", null=True)
+    planId = models.CharField(verbose_name=u'идентификатор тарифа', max_length=40, default="", null=True)
 
     # Строка вида PnDT, где n – количество дней бесплатного периода, доступных пользователю в момент активации тарифа.
     # "trialPeriodDuration": "P14DT"
@@ -97,6 +100,7 @@ class Subscription(models.Model):
         return str(self.subscriptionId)
 
 
+@python_2_unicode_compatible
 class InstallationEvent(models.Model):
     class Meta:
         verbose_name = u'событие установки приложения'
@@ -131,6 +135,7 @@ class InstallationEvent(models.Model):
         return u'{} {} [{}]'.format(self.timestamp, self.id, self.type)
 
 
+@python_2_unicode_compatible
 class Installation(models.Model):
     class Meta:
         verbose_name = u'установленное приложение'

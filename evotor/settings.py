@@ -130,15 +130,6 @@ MIDDLEWARE = [
 
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
-# Токен указывающийся на вкладке интеграция приложения в Облаке Эвотора
-AUTH_TOKEN_EVOTOR = '113d539530237fc6797df463ea0c5fbcf12fcd62'
-# 4d01c1a301068abca70fb7bd32a370479c511f4c
-AUTH_TOKEN_TYPE = b'bearer'
-AUTH_TOKEN_EXPIRY_DAYS = 2
-AUTH_TOKEN_USER = 'User'
-AUTH_TOKEN_CLOUD = 'Cloud'
-AUTH_TOKEN_ANONYMOUS = 'Anonymous'
-
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 SITE_ID = 1
@@ -239,7 +230,7 @@ CKEDITOR_CONFIGS = {
 
 LANGUAGE_CODE = 'ru-Ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 

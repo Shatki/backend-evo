@@ -38,6 +38,10 @@ class InstallationEventAdmin(admin.ModelAdmin):
 class SubscriptionAdmin(admin.ModelAdmin):
     model = Subscription
 
+    readonly_fields = (
+        'subscriptionId',
+    )
+
     list_display = (
         'subscriptionId',
         'productId',

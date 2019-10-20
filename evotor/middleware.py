@@ -41,7 +41,7 @@ class TokenMiddleware(MiddlewareMixin):
             try:
                 token = auth[1].decode(settings.CODING)
             except UnicodeError:
-                return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
+                return APIResponse(error_code=status.ERROR_CODE_1001_WRONG_TOKEN,
                                    reason=_('Invalid token header. Token string should not contain invalid characters.'),
                                    subject="Authorization")
 
@@ -52,12 +52,12 @@ class TokenMiddleware(MiddlewareMixin):
             else:
                 # Вдруг пришел плохой токен?
                 try:
-                    decoded_dict = json.loads(decrypt(token, settings.SECRET_KEY))
+                    req = decrypt(token, settings.SECRET_KEY)
+                    decoded_dict = json.loads(req)
                 except Exception as e:
                     return APIResponse(error_code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
                                        reason=e.args[0],
                                        subject="Token")
-
                 userId = decoded_dict['id']
                 username = decoded_dict['usrnm']
                 expiry = decoded_dict['exp']

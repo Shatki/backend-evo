@@ -1,4 +1,14 @@
 # -*- coding: utf-8 -*-
+# Токен указывающийся на вкладке интеграция приложения в Облаке Эвотора
+AUTH_TOKEN_EVOTOR = '113d539530237fc6797df463ea0c5fbcf12fcd62'
+# 4d01c1a301068abca70fb7bd32a370479c511f4c
+AUTH_TOKEN_TYPE = b'bearer'
+AUTH_TOKEN_EXPIRY_DAYS = 2
+AUTH_TOKEN_USER = 'User'
+AUTH_TOKEN_CLOUD = 'Cloud'
+AUTH_TOKEN_ANONYMOUS = 'Anonymous'
+
+
 NORMAL = u'NORMAL'
 ALCOHOL_MARKED = u'ALCOHOL_MARKED'
 ALCOHOL_NOT_MARKED = u'ALCOHOL_NOT_MARKED'
