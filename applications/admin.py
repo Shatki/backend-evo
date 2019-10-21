@@ -23,11 +23,26 @@ class ApplicationAdmin(admin.ModelAdmin):
 class InstallationEventAdmin(admin.ModelAdmin):
     model = InstallationEvent
 
+    readonly_fields = (
+        'id',
+    )
+
     list_display = (
         'id',
         'timestamp',
         'version',
         'type',
+    )
+
+    fieldsets = (
+        (u'Данные о событии инсталляции', {
+            'fields': (
+                'id',
+                'timestamp',
+                'version',
+                'type',
+            )
+        }),
     )
 
     ordering = (
@@ -87,8 +102,22 @@ class SubscriptionAdmin(admin.ModelAdmin):
 class InstallationDataAdmin(admin.ModelAdmin):
     model = Installation
 
+    readonly_fields = (
+        'installationId',
+    )
+
     list_display = (
         'installationId',
         'productId',
         'userId',
+    )
+
+    fieldsets = (
+        (u'Данные об инсталляции приложения', {
+            'fields': (
+                'installationId',
+                'productId',
+                'userId',
+            )
+        }),
     )

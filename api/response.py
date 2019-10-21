@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import json
 import status
+import datetime
 import evotor.settings as settings
-from api.crypto import encrypt, decrypt
+from api.crypto import encrypt
 from django.views.generic.base import View
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponse
-from users.models import User
 from api.models import Token
-import datetime
 
 
 class APIResponse(HttpResponse):
@@ -70,6 +69,7 @@ class APIView(View):
         Представление API
         :return: self.response (объект HttpResponse)
     """
+
     def __init__(self):
         self.response = APIResponse()
         self.data = None
@@ -80,15 +80,28 @@ class APIView(View):
         e = exception.args[0].split(': ')
         return e[0] if e[0] is not None else "Unexpected", e[1] if len(e) > 1 else None
 
-    def action(self, data):
+    def action(self, *args, **kwargs):
         pass
+
+    def load_json(self, request):
+        # Получаем и преобразуем данные из request.body в JSON
+        try:
+            return json.loads(request.body.decode(settings.CODING))
+        except ValueError as e:
+            # reason, subject = self.decode_exception(e)
+            self.response.add_error(error_code=status.ERROR_CODE_2001_SYNTAX_ERROR,
+                                    reason=_(e.args[0]),
+                                    subject="json")
+            # Вернем ошибки
+            return self.response
 
     def get_data(self, *args):
         """
-            Запрашивает поля с данными из request(self.data)
+            Запрашивает поля с данными из self.data c валидацией на присутствие/отсутствие/Null поле
+
             :param args: Запрашиваемые поля
             :return: validated_data
-            Todo: Валидацию полученных полей из запроса
+            Todo: Валидацию полученных полей из запроса на соответствие с Regex
         """
         validated_data = {}
         for field in args:
@@ -144,19 +157,4 @@ class APIView(View):
         return encrypt(payload, settings.SECRET_KEY)
 
     def post(self, request, *args, **kwargs):
-        """
-            ...Еще не разработана...
-            :param request:
-            :param args:
-            :param kwargs:
-            :return:
-        """
-        if request.user.is_authenticated:
-            # Всю работу с токенами делает миддлварь
-            data = 'Мы авторизованы'
-
-        else:
-            # Не авторизованный пользователь
-            return APIResponse(error_code=status.ERROR_CODE_1006_WRONG_DATA,
-                               reason=_('Permission denied.'),
-                               subject="Authentication")
+        return self.response

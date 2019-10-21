@@ -394,8 +394,10 @@ class TimestampField(models.Field):
         # print "to_python", value, type(value)
         if value is not None and not isinstance(value, datetime):
             try:
-                # обрезаем миллисекунды
-                return datetime.fromtimestamp(value // 1000)
+                # обрезаем миллисекунды (если больше 20.11.2286, 20:46:39)
+                if value > 9999999999:
+                    return datetime.fromtimestamp(value // 1000)
+                return datetime.fromtimestamp(value)
             except (AttributeError, ValueError):
                 raise exceptions.ValidationError(
                     self.error_messages['invalid'],
@@ -422,7 +424,7 @@ class TimestampField(models.Field):
 
             !!! Замечание !!!
             Этот метод используется Django REST сериализатором, поэтому возвращаем не объект,
-            а строку и наче сериализатор будет выдавать ошибку из-за того что не умеет сериализовать Timestamp
+            а строку иначе сериализатор будет выдавать ошибку из-за того что не умеет сериализовать Timestamp
 
             :param value: значение из базы
             :param args:

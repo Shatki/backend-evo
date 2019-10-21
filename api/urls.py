@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^user/token/$', csrf_exempt(views.UserTokenView.as_view()), name="token"),
 
     url(r'^subscription/event/$', csrf_exempt(views.SubscriptionEventView.as_view()), name="subscriptionEvent"),
+    url(r'^installation/event/$', csrf_exempt(views.InstallationEventView.as_view()), name="installationEvent"),
 
     #url(r'^stores/$', views.StoreList.as_view()),
     #url(r'^stores/(?P<uuid>[0-9A-Fa-f-]+/$)', views.StoreDetail.as_view()),
