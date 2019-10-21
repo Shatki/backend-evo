@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Токен указывающийся на вкладке интеграция приложения в Облаке Эвотора
-AUTH_TOKEN_EVOTOR = '113d539530237fc6797df463ea0c5fbcf12fcd62'
+AUTH_TOKEN_EVOTOR = '*******************************************'
 # 4d01c1a301068abca70fb7bd32a370479c511f4c
 AUTH_TOKEN_TYPE = b'bearer'
 AUTH_TOKEN_REGEX = '[a-zA-Z0-9_=-]+$'
