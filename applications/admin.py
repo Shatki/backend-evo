@@ -102,14 +102,11 @@ class SubscriptionAdmin(admin.ModelAdmin):
 class InstallationDataAdmin(admin.ModelAdmin):
     model = Installation
 
-    readonly_fields = (
-        'installationId',
-    )
 
     list_display = (
-        'installationId',
         'productId',
         'userId',
+        'installationId',
     )
 
     fieldsets = (

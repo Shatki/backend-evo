@@ -2,13 +2,11 @@
 from __future__ import unicode_literals
 
 import uuid
+import evotor.settings as settings
 from django.db import models
 from six import python_2_unicode_compatible
-
 from evotor.db import UserId, TimestampField
 from users.models import User
-from .constants import SUBSCRIPTION_TYPES, SUBSCRIPTION_TYPE_DEFAULT
-from .constants import APPLICATION_EVENT_DEFAULT, APPLICATION_EVENT_TYPES
 
 
 @python_2_unicode_compatible
@@ -78,8 +76,8 @@ class Subscription(models.Model):
     # SubscriptionTerminated – Подписка завершена. Приходит если не прошла регулярная оплата,
     #       независимо от того запросил пользователь завершение подписки или нет.
     # "type": "SubscriptionCreated"
-    type = models.CharField(verbose_name=u'тип события', max_length=40, choices=SUBSCRIPTION_TYPES,
-                            default=SUBSCRIPTION_TYPE_DEFAULT)
+    type = models.CharField(verbose_name=u'тип события', max_length=40, choices=settings.SUBSCRIPTION_TYPES,
+                            default=settings.SUBSCRIPTION_TYPE_DEFAULT)
 
     # Идентификатор тарифа, который вы создаёте на портале разработчиков.
     # "planId": "example"
@@ -103,8 +101,8 @@ class Subscription(models.Model):
 @python_2_unicode_compatible
 class InstallationEvent(models.Model):
     class Meta:
-        verbose_name = u'событие установки приложения'
-        verbose_name_plural = u'журнал событий установок приложений'
+        verbose_name = u'событие установки или удаления приложения'
+        verbose_name_plural = u'журнал событий установок и удалений приложений'
         db_table = u'installation_events'
 
     # Идентификатор события.
@@ -125,14 +123,14 @@ class InstallationEvent(models.Model):
     # ApplicationInstalled – приложение активировано.
     # ApplicationUninstalled – приложение деактивировано.
     # "type": "ApplicationInstalled"
-    type = models.CharField(verbose_name=u'тип события', max_length=40, choices=APPLICATION_EVENT_TYPES,
-                            default=APPLICATION_EVENT_DEFAULT)
+    type = models.CharField(verbose_name=u'тип события', max_length=40, choices=settings.APPLICATION_EVENT_TYPES,
+                            default=settings.APPLICATION_EVENT_DEFAULT)
 
     def __unicode__(self):
-        return u'{} {} [{}]'.format(self.timestamp, self.id, self.type)
+        return u'{}  [{}]'.format(self.type, self.timestamp)
 
     def __str__(self):
-        return u'{} {} [{}]'.format(self.timestamp, self.id, self.type)
+        return u'{}  [{}]'.format(self.type, self.timestamp)
 
 
 @python_2_unicode_compatible
@@ -145,16 +143,16 @@ class Installation(models.Model):
     # Идентификатор приложения в Облаке Эвотор.
     # regex /^[0-9]{2}-[0-9]{15}$/
     # "productId": "string",
-    productId = models.ForeignKey(Application, verbose_name=u'идентификатор приложения Эвотор',
+    productId = models.ForeignKey(Application, verbose_name=u'приложение Эвотор',
                                   default=uuid.uuid4, db_column='product_id', )
     # Идентификатор пользователя в Облаке Эвотор.
-    userId = models.ForeignKey(User, verbose_name=u'идентификатор пользователя Эвотор',
+    userId = models.ForeignKey(User, verbose_name=u'пользователь Эвотор',
                                default=UserId.DEFAULT_USERID, db_column='user_id', null=False)
     # Событие инсталляции
-    installationId = models.OneToOneField(InstallationEvent, primary_key=True,
-                                          related_name='data', db_column='installation_id',
-                                          verbose_name=u'дата и идентификатор события [событие]',
-                                          default=None, on_delete=models.CASCADE, null=False)
+    installationId = models.ForeignKey(InstallationEvent,
+                                       related_name='data', db_column='installation_id',
+                                       verbose_name=u'текущий статус [дата события]',
+                                       default=None, on_delete=models.CASCADE, null=False)
 
     def __unicode__(self):
         return u'{}: {}, {}'.format(self.installationId, self.userId, self.productId)

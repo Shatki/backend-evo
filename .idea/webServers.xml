@@ -2,8 +2,8 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="71cfa5ad-3a81-440f-a92e-01bf1030c70b" name="evotorservice" url="http://evotorservice.ru">
-        <fileTransfer host="evotorservice.ru" port="21" accessType="FTPS">
+      <webServer id="71cfa5ad-3a81-440f-a92e-01bf1030c70b" name="evotorservice" url="https://evotorservice.ru">
+        <fileTransfer host="9200247477.myjino.ru" port="21" accessType="FTPS">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

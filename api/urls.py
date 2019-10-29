@@ -26,6 +26,10 @@ urlpatterns = [
     url(r'^subscription/event/$', csrf_exempt(views.SubscriptionEventView.as_view()), name="subscriptionEvent"),
     url(r'^installation/event/$', csrf_exempt(views.InstallationEventView.as_view()), name="installationEvent"),
 
+
+    # Урлы для работы фронтэнда
+    url(r'^stores/$', csrf_exempt(views.StoresListView.as_view()), name="stores"),
+
     #url(r'^stores/$', views.StoreList.as_view()),
     #url(r'^stores/(?P<uuid>[0-9A-Fa-f-]+/$)', views.StoreDetail.as_view()),
     # url('', views.UserList.as_view()),

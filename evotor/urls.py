@@ -15,8 +15,12 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.views.decorators.clickjacking import xframe_options_exempt
+
+from api.views import DashboardView
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/v1/', include('api.urls')),
+    url(r'^.*', xframe_options_exempt(DashboardView.as_view()), name='DashboardView')
 ]

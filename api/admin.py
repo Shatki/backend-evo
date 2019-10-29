@@ -10,11 +10,13 @@ class TokenAdmin(admin.ModelAdmin):
     list_display = (
         'key',
         'user',
-        'created'
+        'created',
+        'updated',
     )
 
     readonly_fields = (
         'key',
         'created',
+        'updated'
     )
 

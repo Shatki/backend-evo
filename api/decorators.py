@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import status
 import evotor.settings as settings
+from django.utils.translation import ugettext_lazy as _
 
 
 def benchmark(func):
@@ -18,11 +19,11 @@ def benchmark(func):
 
 def cloud_authorization(func):
     def wrapper(self, request, *args, **kwargs):
-        if request.META['AUTH_TOKEN'] == settings.AUTH_TOKEN_CLOUD:
+        if request.META['HTTP_AUTH'] == settings.HTTP_AUTH_CLOUD:
             return func(self, request, *args, **kwargs) or self.response
         else:
             self.response.add_error(status.ERROR_CODE_1001_WRONG_TOKEN,
                                     reason=_('Cloud token error'),
-                                    subject="Authentication")
+                                    subject="Authorization")
             return self.response
     return wrapper

@@ -1,16 +1,35 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import datetime
-import json
-import evotor.settings as settings
 
+from django.shortcuts import render_to_response
+from django.views.generic import TemplateView
 from django.utils.translation import ugettext_lazy as _
+
 from api.response import APIView, status
 from api.decorators import cloud_authorization
 from api.models import Token
-from users.models import User
+
 from applications.models import Application, Subscription, InstallationEvent, Installation
 from stores.models import Store
+from users.models import User
+
+
+class DashboardView(APIView):
+    template_name = "index.html"
+
+    def get(self, request):
+        # self.data = self.get_params(request)
+        # validated_data = self.extract_data('token', 'user_id')
+        # print validated_data
+        # if validated_data is None:
+        #    self.response.add_error(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
+        #                            reason=_('GET request is wrong'),
+        #                            subject="Request")
+            # Вернем ошибки
+
+        #    return self.response
+        print request.META
+        return render_to_response(template_name=self.template_name)
 
 
 class UserCreateView(APIView):
@@ -32,22 +51,24 @@ class UserCreateView(APIView):
         }
            *2-х дневный
         """
+
     @cloud_authorization
     def post(self, request, *args, **kwargs):
         # Получаем и преобразуем данные из request.body в JSON
         self.data = self.load_json(request)
         # Всю работу с токенами делает миддлварь, мы только берем данные из запроса
-        validated_data = self.get_data('userId', 'password', 'username')
+        validated_data = self.extract_data('userId', 'password', 'username')
         if validated_data is None:
             self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
                                     reason=_('Fields error'),
                                     subject="Request")
             # Вернем ошибки
             return self.response
-        # Создаем нового пользователя
+        # Создаем нового пользователя или получаем неактивную запись
         try:
-            user = User.objects.create(userId=validated_data['userId'],
-                                       username=validated_data['username'])
+            user, created = User.objects.get_or_create(userId=validated_data['userId'])
+            user.username = validated_data['username']
+            user.set_password(validated_data['password'])
         except Exception as e:
             reason, subject = self.decode_exception(e)
             self.response.add_error(status.ERROR_CODE_2005_USER_EXIST,
@@ -56,7 +77,10 @@ class UserCreateView(APIView):
             # Вернем ошибки
             return self.response
         else:
-            user.set_password(validated_data['password'])
+            # Обновление информации о пользователе
+            if created:
+                # Todo: Создан новый пользователь иначе пользователь обновлен
+                pass
             user.save()
             # Все удачно вернем данные
             self.response.data = {
@@ -87,12 +111,13 @@ class UserVerifyView(APIView):
             "userId": "01-000000000000004"
         }
     """
+
     @cloud_authorization
     def post(self, request, *args, **kwargs):
         # Получаем и преобразуем данные из request.body в JSON
         self.data = self.load_json(request)
         # Всю работу с токенами делает миддлварь, мы только берем данные из запроса
-        validated_data = self.get_data('userId', 'password', 'username')
+        validated_data = self.extract_data('userId', 'password', 'username')
         if validated_data is None:
             self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
                                     reason=_('Fields error'),
@@ -137,12 +162,13 @@ class UserTokenView(APIView):
         Ответ:
         HTTP 200 OK
     """
+
     @cloud_authorization
     def post(self, request, *args, **kwargs):
         # Получаем и преобразуем данные из request.body в JSON
         self.data = self.load_json(request)
         # Всю работу с токенами делает миддлварь, мы только берем данные из запроса
-        validated_data = self.get_data('userId', 'token')
+        validated_data = self.extract_data('userId', 'token')
         if validated_data is None:
             self.response.add_error(error_code=status.ERROR_CODE_2002_FIELDS_ERROR,
                                     reason=_('Fields error'),
@@ -188,12 +214,13 @@ class SubscriptionEventView(APIView):
         Ответ:
         HTTP 200 OK
     """
+
     @cloud_authorization
     def post(self, request, *args, **kwargs):
         # Получаем и преобразуем данные из request.body в JSON
         self.data = self.load_json(request)
         # Всю работу с токенами делает миддлварь, мы только берем данные из запроса
-        validated_data = self.get_data('subscriptionId',
+        validated_data = self.extract_data('subscriptionId',
                                        'productId',
                                        'userId',
                                        'timestamp',
@@ -253,43 +280,54 @@ class InstallationEventView(APIView):
 
         Ответ:
         HTTP 200 OK
-
     """
+
     @cloud_authorization
     def post(self, request, *args, **kwargs):
         self.data = self.load_json(request)
         # Всю работу с токенами делает миддлварь, мы только берем данные из запроса
-        validated_data = self.get_data('id',
+        validated_data = self.extract_data('id',
                                        'timestamp',
                                        'version',
                                        'type',
                                        'data')
 
         try:
+            # Сначала найдем пользователя
+            user, created = User.objects.get_or_create(userId=validated_data['data']['userId'])
+            if created:
+                # Todo: Создали нового пользователя, без пароля
+                print 'Перезаписано событие инсталляции c id: ', user.userId
+                pass
+
             installationEvent, created = InstallationEvent.objects.get_or_create(
                 id=validated_data['id'],
                 timestamp=validated_data['timestamp']
             )
-            #installationEvent.timestamp = validated_data['timestamp']
+            # installationEvent.timestamp = validated_data['timestamp']
             installationEvent.version = validated_data['version']
             installationEvent.type = validated_data['type']
             installationEvent.save()
-            if created:
-                # Todo  инсталляция с таким  Id уже была, нужно разобраться
+            if not created:
+                # Todo: Инсталляция с таким  Id уже была, нужно разобраться
+                print 'Перезаписано событие инсталляции c id: ', installationEvent.id
                 pass
 
-            user = User.objects.get(userId=validated_data['data']['userId'])
-            product, created = Application.objects.get_or_create(pk=validated_data['data']['productId'])
+            product, created = Application.objects.get_or_create(uuid=validated_data['data']['productId'])
             if created:
                 # Todo: Создано новое приложение, почему его не было в базе?
+                print 'Создано новое приложение c uuid:', product.uuid
                 pass
+
             installation, created = Installation.objects.get_or_create(
                 productId=product,
                 userId=user,
-                installationId=installationEvent
             )
+            installation.installationId = installationEvent
+            installation.save()
+
             if created:
-                # Todo: Эта установка уже была, перепишем, но так не должно быть
+                # Todo: Создана новая запись Installation
                 pass
 
         except Exception as e:
@@ -299,3 +337,13 @@ class InstallationEventView(APIView):
                                     subject=subject or "installation")
             # Вернем ошибки
             return self.response
+
+
+class StoresListView(APIView):
+    def get(self, request, *args, **kwargs):
+        self.response.data = {
+            "userId": 'user_id',
+            "token": 'token'
+        }
+        self.response.to_json()
+        return self.response

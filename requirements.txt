@@ -7,3 +7,4 @@ six
 pycryptodome
 Django-ckeditor
 Django-unixdatetimefield
+Django-cors-headers

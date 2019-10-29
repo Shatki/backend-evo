@@ -14,12 +14,13 @@ class Token(models.Model):
     The default authorization token model.
     f46b89a5-8e80-4591-b0aa-94551790444b
     """
-    key = models.CharField(_("Key"), max_length=40)
+    key = models.CharField(u"ключ", max_length=40)
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, related_name='auth_token',
         on_delete=models.CASCADE, verbose_name=_("User")
     )
-    created = models.DateTimeField(_("Created"), auto_now_add=True)
+    created = models.DateTimeField(u"создан", auto_now_add=True)
+    updated = models.DateTimeField(u"обновлен", auto_now=True)
 
     class Meta:
         verbose_name = _("Token")

@@ -16,8 +16,10 @@ from evotor.api_settings import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FILES = 'files/evotor'
-FILES_DIR = os.path.dirname(os.path.join(os.path.expanduser('~'), FILES))
+
+PROJECT_FILES_DIR = 'files/evotor/'
+
+FILES_DIR = os.path.dirname(os.path.join(os.path.expanduser('~'), PROJECT_FILES_DIR))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -42,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'corsheaders',
 
     'api.apps.ApiConfig',
     'applications.apps.ApplicationsConfig',
@@ -119,8 +123,12 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'evotor.middleware.HttpManagementMiddleware',
     'evotor.middleware.TokenMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -141,7 +149,7 @@ ROOT_URLCONF = 'evotor.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -176,6 +184,12 @@ CSRF_TRUSTED_ORIGINS = [
     u'evotorservice.ru',
     u'.evotorservice.ru',
     u'127.0.0.1:8000',
+]
+
+# CORS Setup
+CORS_ORIGIN_WHITELIST = [
+    "https://evotorservice.ru",
+    "http://localhost:8000"
 ]
 
 
@@ -245,12 +259,16 @@ CODING = "utf-8"
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 # указывает на изначально пустую папку, в которую будет собрана вся статика: как project-wide,
 # так и app-specific. Эту папку, в общем случае, должен обслуживать frontend web-сервер (например, nginx)
-STATIC_ROOT = os.path.join(FILES_DIR, FILES, 'static')
 
+STATIC_ROOT = os.path.join(FILES_DIR, 'static')
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = os.path.join(FILES_DIR, FILES, 'media')
+MEDIA_ROOT = os.path.join(FILES_DIR, 'media')
 MEDIA_URL = '/media/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+)
 
 try:
     LOCAL_INSTALLED_APPS = LOCAL_MIDDLEWARE = []

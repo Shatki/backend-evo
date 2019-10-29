@@ -84,6 +84,7 @@ class APIView(View):
         pass
 
     def load_json(self, request):
+        # POST only
         # Получаем и преобразуем данные из request.body в JSON
         try:
             return json.loads(request.body.decode(settings.CODING))
@@ -95,7 +96,16 @@ class APIView(View):
             # Вернем ошибки
             return self.response
 
-    def get_data(self, *args):
+    def get_params(self, request):
+        try:
+            return request.GET
+        except ValueError as e:
+            # reason, subject = self.decode_exception(e)
+            self.response.add_error(error_code=status.ERROR_CODE_2001_SYNTAX_ERROR,
+                                    reason=_(e.args[0]),
+                                    subject="GET")
+
+    def extract_data(self, *args):
         """
             Запрашивает поля с данными из self.data c валидацией на присутствие/отсутствие/Null поле
 

@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 # Токен указывающийся на вкладке интеграция приложения в Облаке Эвотора
-AUTH_TOKEN_EVOTOR = '113d539530237fc6797df463ea0c5fbcf12fcd62'
+AUTH_TOKEN_EVOTOR = 'bd1a88b7-246e-4f8b-9eb1-c3dca7819120'
 # 4d01c1a301068abca70fb7bd32a370479c511f4c
 AUTH_TOKEN_TYPE = b'bearer'
-AUTH_TOKEN_REGEX = '[a-zA-Z0-9_=-]+$'
+AUTH_TOKEN_REGEX = '/^[a-zA-Z0-9_=-]+$/'
+AUTH_USERNAME_REGEX = '((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/'
 
 AUTH_TOKEN_EXPIRY_DAYS = 2
-AUTH_TOKEN_USER = 'User'
-AUTH_TOKEN_CLOUD = 'Cloud'
-AUTH_TOKEN_ANONYMOUS = 'Anonymous'
 
-
+HTTP_AUTH_USER = 'User'
+HTTP_AUTH_CLOUD = 'Cloud'
+HTTP_AUTH_ANONYMOUS = 'Anonymous'
 
 NORMAL = u'NORMAL'
 ALCOHOL_MARKED = u'ALCOHOL_MARKED'
@@ -28,11 +28,11 @@ PRODUCT_TYPES = (
     (SERVICE, u'услуга (доступен на терминалах начиная с прошивки 3.0)'),
 )
 
-NO_VAT = u'NO_VAT' 
+NO_VAT = u'NO_VAT'
 VAT_10 = u'VAT_10'
-VAT_18 = u'VAT_18' 
-VAT_0 = u'VAT_0' 
-VAT_18_118 = u'VAT_18_118' 
+VAT_18 = u'VAT_18'
+VAT_0 = u'VAT_0'
+VAT_18_118 = u'VAT_18_118'
 VAT_10_110 = u'VAT_10_110'
 
 TAX_TYPE_DEFAULT = NO_VAT
@@ -45,3 +45,32 @@ TAX_TYPES = (
     (VAT_18_118, 'НДС 18/118'),
     (VAT_10_110, 'НДС 10/110'),
 )
+
+SUBSCRIPTION_CREATED = u'SubscriptionCreated'
+ADDONS_UPDATED = u'AddonsUpdated'
+SUBSCRIPTION_ACTIVATED = u'SubscriptionActivated'
+SUBSCRIPTION_RENEWED = u'SubscriptionRenewed'
+SUBSCRIPTION_TERMS_CHANGED = u'SubscriptionTermsChanged'
+SUBSCRIPTION_TERMINATION_REQUESTED = u'SubscriptionTerminationRequested'
+SUBSCRIPTION_TERMINATED = u'SubscriptionTerminated'
+
+SUBSCRIPTION_TYPE_DEFAULT = SUBSCRIPTION_CREATED
+
+SUBSCRIPTION_TYPES = {
+    (SUBSCRIPTION_CREATED, u'новая подписка'),
+    (ADDONS_UPDATED, u'список платных опций, выбранных пользователем'),
+    (SUBSCRIPTION_ACTIVATED, u'подписка активирована'),
+    (SUBSCRIPTION_RENEWED, u'подписка продлена на следующий период'),
+    (SUBSCRIPTION_TERMS_CHANGED, u'изменились условия подписки'),
+    (SUBSCRIPTION_TERMINATION_REQUESTED, u'запрос на завершение подписки'),
+    (SUBSCRIPTION_TERMINATED, u'подписка завершена')
+}
+
+APPLICATION_EVENT_INSTALLED = u'ApplicationInstalled'
+APPLICATION_EVENT_UNINSTALLED = u'ApplicationUninstalled'
+APPLICATION_EVENT_DEFAULT = APPLICATION_EVENT_INSTALLED
+
+APPLICATION_EVENT_TYPES = {
+    (APPLICATION_EVENT_INSTALLED, u'приложение установлено'),
+    (APPLICATION_EVENT_UNINSTALLED, u'приложение удалено'),
+}

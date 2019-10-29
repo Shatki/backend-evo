@@ -52,7 +52,7 @@
                 return new Date();
             }
         },
-        // Add a warning when the time zone in the browser and evotor do not match.
+        // Add a warning when the time zone in the browser and backend do not match.
         addTimezoneWarning: function(inp) {
             var $ = django.jQuery;
             var warningClass = DateTimeShortcuts.timezoneWarningClass;

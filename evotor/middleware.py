@@ -10,9 +10,33 @@ from users.models import User
 from api.response import APIResponse
 
 
+class HttpManagementMiddleware(MiddlewareMixin):
+    """
+        Миддлварь для управления HTTP запросами
+
+        1. Переносит параметры GET запроса в заголовки
+        2.
+        3.
+    """
+    def process_request(self, request):
+        print request.body.decode('utf-8')
+        # Переносим параметры GET запроса в заголовок
+        if request.method == 'GET':
+            try:
+                if 'token' in request.GET:
+                    request.META['HTTP_AUTH_TOKEN'] = request.GET['token']
+                if 'user_id' in request.GET:
+                    request.META['HTTP_AUTH_USER_ID'] = request.GET['user_id']
+            except Exception as e:
+                print 'HttpManagementMiddleware warning: ', e.args[0]
+
+        # print request.META
+
+
 class TokenMiddleware(MiddlewareMixin):
     """
         Миддлварь, которая авторизует пользователя по токену в заголовке 'HTTP_AUTHORIZATION'
+
         1. Перехватывает заголовок
         2. Если в заголовке в HTTP_AUTHORIZATION есть токен, выделяем его
         3. Если токен Облака Эвотор, то не авторизуем пользователя и доступны:
@@ -24,7 +48,7 @@ class TokenMiddleware(MiddlewareMixin):
     """
     def process_request(self, request):
         # Если в заголовке нет авторизации -> пропускаем на сайт без авторизации
-        request.META['AUTH_TOKEN'] = settings.AUTH_TOKEN_ANONYMOUS
+        request.META['HTTP_AUTH'] = settings.HTTP_AUTH_ANONYMOUS
         if 'HTTP_AUTHORIZATION' not in request.META:
             return None
 
@@ -48,9 +72,13 @@ class TokenMiddleware(MiddlewareMixin):
             # Если в заголовке есть токен Облака Эвотор, то пропускаем
             if token == settings.AUTH_TOKEN_EVOTOR:
                 # Пришел токен Облака Эвотор
-                request.META['AUTH_TOKEN'] = settings.AUTH_TOKEN_CLOUD
+                request.META['HTTP_AUTH'] = settings.HTTP_AUTH_CLOUD
             else:
                 # Вдруг пришел плохой токен?
+                if len(token) != 128:
+                    return APIResponse(error_code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
+                                       reason="Wrong user token",
+                                       subject="Token")
                 try:
                     req = decrypt(token, settings.SECRET_KEY)
                     decoded_dict = json.loads(req)
@@ -81,7 +109,7 @@ class TokenMiddleware(MiddlewareMixin):
 
                 # user = auth.authenticate(token=auth_header[1])
                 request.user = user
-                request.META['AUTH_TOKEN'] = settings.AUTH_TOKEN_USER
+                request.META['HTTP_AUTH'] = settings.HTTP_AUTH_USER
             return None
         else:
             return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
