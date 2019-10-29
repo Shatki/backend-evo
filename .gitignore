@@ -5,5 +5,5 @@
 /pyenv/
 /venv/
 /Trash/
-/evotor/api_settings.py
+/evotor/private_settings.py
 .htaccess

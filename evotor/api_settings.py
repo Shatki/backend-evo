@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-# Токен указывающийся на вкладке интеграция приложения в Облаке Эвотора
-AUTH_TOKEN_EVOTOR = 'bd1a88b7-246e-4f8b-9eb1-c3dca7819120'
 # 4d01c1a301068abca70fb7bd32a370479c511f4c
 AUTH_TOKEN_TYPE = b'bearer'
 AUTH_TOKEN_REGEX = '/^[a-zA-Z0-9_=-]+$/'
-AUTH_USERNAME_REGEX = '((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/'
+# AUTH_USERNAME_REGEX = '/^((8|\+7)[\-]?)?(\(?\d{3}\)?[\-]?)?[\d\-]{7,10}$/'
 
 AUTH_TOKEN_EXPIRY_DAYS = 2
 
