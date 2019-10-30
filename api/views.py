@@ -211,6 +211,16 @@ class SubscriptionEventView(APIView):
             "deviceNumber": 35
         }
 
+        {
+            "subscriptionId":"e9f1a3ee-e78d-49b3-93d6-389f718ba8ec",
+            "productId":"59fea9cb-0817-4431-9fb7-594f81584110",
+            "userId":"01-000000000738894",
+            "nextBillingDate":"2019-11-28T21:14:03.486Z",
+            "sequenceNumber":4,
+            "timestamp":"2019-10-28T21:14:12.174Z",
+            "type":"SubscriptionRenewed"
+            }
+
         Ответ:
         HTTP 200 OK
     """

@@ -40,3 +40,26 @@ class Token(models.Model):
 
     def __unicode__(self):
         return self.key
+
+
+@python_2_unicode_compatible
+class Log(models.Model):
+    """
+    The default authorization token model.
+    f46b89a5-8e80-4591-b0aa-94551790444b
+    """
+    request = models.CharField(verbose_name=u"Запрос", max_length=10240)
+    response = models.CharField(verbose_name=u"Ответ", max_length=10240)
+    status = models.IntegerField(verbose_name=u'статус оствета', default=0)
+    datetime = models.DateTimeField(u"дата и время", auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Log")
+        verbose_name_plural = _("Logs")
+        db_table = "logs"
+
+    def __str__(self):
+        return u'[%s] [%s] Запрос:[%s] Ответ:[%s]' % (self.date, self.status, self.request, self.response)
+
+    def __unicode__(self):
+        return u'[%s] [%s] Запрос:[%s] Ответ:[%s]' % (self.date, self.status, self.request, self.response)

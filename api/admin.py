@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.contrib import admin
-from models import Token
+from models import Token, Log
 
 
 @admin.register(Token)
@@ -18,5 +18,20 @@ class TokenAdmin(admin.ModelAdmin):
         'key',
         'created',
         'updated'
+    )
+
+
+@admin.register(Log)
+class LogAdmin(admin.ModelAdmin):
+    model = Log
+    list_display = (
+        'request',
+        'response',
+        'status',
+        'datetime',
+    )
+
+    readonly_fields = (
+        'datetime',
     )
 

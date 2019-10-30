@@ -7,19 +7,23 @@ from django.utils.translation import ugettext_lazy as _
 from api import status
 from api.crypto import decrypt
 from users.models import User
+from api.models import Log
 from api.response import APIResponse
 
 
 class HttpManagementMiddleware(MiddlewareMixin):
     """
-        Миддлварь для управления HTTP запросами
+        Миддлварь для управления HTTP запросами и логирует сетевые обращения
 
         1. Переносит параметры GET запроса в заголовки
         2.
         3.
     """
+    log = None
+
     def process_request(self, request):
-        print request.body.decode('utf-8')
+        self.log = Log.objects.create(request=request.body.decode('utf-8'))
+        self.log.save()
         # Переносим параметры GET запроса в заголовок
         if request.method == 'GET':
             try:
@@ -31,6 +35,16 @@ class HttpManagementMiddleware(MiddlewareMixin):
                 print 'HttpManagementMiddleware warning: ', e.args[0]
 
         # print request.META
+
+    def process_response(self, request, response):
+        if request.method == 'POST':
+            try:
+                self.log.response = response.content.decode(settings.CODING)
+                self.log.status = response.status_code
+                self.log.save()
+            except Exception as e:
+                print e.args[0]
+        return response
 
 
 class TokenMiddleware(MiddlewareMixin):
