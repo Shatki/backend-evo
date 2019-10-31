@@ -11,19 +11,51 @@ from api.models import Log
 from api.response import APIResponse
 
 
+class LogsMiddleware(MiddlewareMixin):
+    """
+        Миддлварь для логирования HTTP запросов
+    """
+    log = None
+    content = None
+
+    def process_request(self, request):
+        # Фильтруем только запросы к API
+        print request.META
+        if request.META['PATH_INFO'][0:8] == u'/api/v1/':
+            try:
+                if request.method == "POST" or request.method == "OPTIONS":
+                    self.content = str(request.body.decode('utf-8')).replace(',"', ', "')
+                elif request.method == "GET":
+                    self.content = str(request.GET)
+
+                if self.content is not None:
+                    self.log = Log.objects.create(request=self.content)
+                    self.log.headers = str(request.META)    # .replace(',"', ', "')
+                    self.log.save()
+
+            except Exception as e:
+                print 'process_request_exception: ', e.args[0]
+
+    def process_response(self, request, response):
+        if self.log is not None:
+            try:
+                self.log.response = response.content.decode(settings.CODING)
+                self.log.status = response.status_code
+                self.log.save()
+            except Exception as e:
+                print 'process_response_exceprion: ', e.args[0]
+        return response
+
+
 class HttpManagementMiddleware(MiddlewareMixin):
     """
-        Миддлварь для управления HTTP запросами и логирует сетевые обращения
+        Миддлварь для управления HTTP запросами
 
         1. Переносит параметры GET запроса в заголовки
         2.
         3.
     """
-    log = None
-
     def process_request(self, request):
-        self.log = Log.objects.create(request=request.body.decode('utf-8'))
-        self.log.save()
         # Переносим параметры GET запроса в заголовок
         if request.method == 'GET':
             try:
@@ -33,18 +65,6 @@ class HttpManagementMiddleware(MiddlewareMixin):
                     request.META['HTTP_AUTH_USER_ID'] = request.GET['user_id']
             except Exception as e:
                 print 'HttpManagementMiddleware warning: ', e.args[0]
-
-        # print request.META
-
-    def process_response(self, request, response):
-        if request.method == 'POST':
-            try:
-                self.log.response = response.content.decode(settings.CODING)
-                self.log.status = response.status_code
-                self.log.save()
-            except Exception as e:
-                print e.args[0]
-        return response
 
 
 class TokenMiddleware(MiddlewareMixin):
@@ -60,6 +80,7 @@ class TokenMiddleware(MiddlewareMixin):
         4. Если токен пользователя, то авторизуем его через токен
 
     """
+
     def process_request(self, request):
         # Если в заголовке нет авторизации -> пропускаем на сайт без авторизации
         request.META['HTTP_AUTH'] = settings.HTTP_AUTH_ANONYMOUS
@@ -80,7 +101,8 @@ class TokenMiddleware(MiddlewareMixin):
                 token = auth[1].decode(settings.CODING)
             except UnicodeError:
                 return APIResponse(error_code=status.ERROR_CODE_1001_WRONG_TOKEN,
-                                   reason=_('Invalid token header. Token string should not contain invalid characters.'),
+                                   reason=_(
+                                       'Invalid token header. Token string should not contain invalid characters.'),
                                    subject="Authorization")
 
             # Если в заголовке есть токен Облака Эвотор, то пропускаем
@@ -129,4 +151,3 @@ class TokenMiddleware(MiddlewareMixin):
             return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
                                reason=_('Wrong Authorization data.'),
                                subject="Authorization")
-

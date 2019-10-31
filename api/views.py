@@ -350,7 +350,16 @@ class InstallationEventView(APIView):
 
 
 class StoresListView(APIView):
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
+        self.response.data = {
+            "userId": 'user_id',
+            "token": 'token'
+        }
+        self.response.to_json()
+        return self.response
+
+    def options(self, request, *args, **kwargs):
+        print request.META
         self.response.data = {
             "userId": 'user_id',
             "token": 'token'

@@ -48,8 +48,9 @@ class Log(models.Model):
     The default authorization token model.
     f46b89a5-8e80-4591-b0aa-94551790444b
     """
-    request = models.CharField(verbose_name=u"Запрос", max_length=10240)
-    response = models.CharField(verbose_name=u"Ответ", max_length=10240)
+    request = models.TextField(verbose_name=u"запрос к серверу", max_length=10240, default=None, null=True)
+    response = models.TextField(verbose_name=u"ответ сервера", max_length=10240, default=None, null=True)
+    headers = models.TextField(verbose_name=u"заголовки", max_length=2048, default=None, null=True)
     status = models.IntegerField(verbose_name=u'статус оствета', default=0)
     datetime = models.DateTimeField(u"дата и время", auto_now_add=True)
 
@@ -59,7 +60,7 @@ class Log(models.Model):
         db_table = "logs"
 
     def __str__(self):
-        return u'[%s] [%s] Запрос:[%s] Ответ:[%s]' % (self.date, self.status, self.request, self.response)
+        return u'[%s] [%s]' % (self.datetime, self.status)
 
     def __unicode__(self):
-        return u'[%s] [%s] Запрос:[%s] Ответ:[%s]' % (self.date, self.status, self.request, self.response)
+        return u'[%s] [%s]' % (self.datetime, self.status)

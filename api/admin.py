@@ -25,10 +25,11 @@ class TokenAdmin(admin.ModelAdmin):
 class LogAdmin(admin.ModelAdmin):
     model = Log
     list_display = (
+        'datetime',
+        'status',
+        'headers',
         'request',
         'response',
-        'status',
-        'datetime',
     )
 
     readonly_fields = (
