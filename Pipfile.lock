@@ -22,7 +22,7 @@
                 "sha256:94395804ad80f68d66090a74d68ff2583b43333e1785a026c2aa10cf161642a6"
             ],
             "index": "pypi",
-            "version": "==1.11.22"
+            "version": "==1.11.23"
         },
         "django-ckeditor": {
             "hashes": [
