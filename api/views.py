@@ -14,22 +14,25 @@ from stores.models import Store
 from users.models import User
 
 
+# Временная затычка
 class DashboardView(APIView):
+    # Todo: переделать главную страницу без Реакта
     template_name = "index.html"
 
     def get(self, request):
-        # self.data = self.get_params(request)
-        # validated_data = self.extract_data('token', 'user_id')
-        # print validated_data
-        # if validated_data is None:
-        #    self.response.add_error(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
-        #                            reason=_('GET request is wrong'),
-        #                            subject="Request")
+        self.data = self.get_params(request)
+        validated_data = self.extract_data('token', 'user_id')
+        if validated_data is None:
+            self.response.add_error(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
+                                    reason=_('GET request is wrong'),
+                                    subject="Request")
             # Вернем ошибки
-
-        #    return self.response
-        print request.META
-        return render_to_response(template_name=self.template_name)
+            return self.response
+        context = {'token': validated_data['token'],
+                   'user_id': validated_data['user_id']
+                   }
+        # print request.META
+        return render_to_response(template_name=self.template_name, context=context)
 
 
 class UserCreateView(APIView):
@@ -350,19 +353,10 @@ class InstallationEventView(APIView):
 
 
 class StoresListView(APIView):
-    def post(self, request, *args, **kwargs):
+    def get(self, request, user_id, token, *args, **kwargs):
         self.response.data = {
-            "userId": 'user_id',
-            "token": 'token'
-        }
-        self.response.to_json()
-        return self.response
-
-    def options(self, request, *args, **kwargs):
-        print request.META
-        self.response.data = {
-            "userId": 'user_id',
-            "token": 'token'
+            "userId": user_id,
+            "token": token
         }
         self.response.to_json()
         return self.response

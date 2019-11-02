@@ -28,7 +28,9 @@ urlpatterns = [
 
 
     # Урлы для работы фронтэнда
-    url(r'^stores/$', csrf_exempt(views.StoresListView.as_view()), name="stores"),
+    # https://api.evotorservice.ru/01-000000000738894/stores/a06c4306-732d-4914-9543-a588af06c683
+    url(r'^user/(?P<user_id>[0-9-]+)/stores/(?P<token>[0-9A-Za-z-]+)$',
+        csrf_exempt(views.StoresListView.as_view()), name="stores"),
 
     #url(r'^stores/$', views.StoreList.as_view()),
     #url(r'^stores/(?P<uuid>[0-9A-Fa-f-]+/$)', views.StoreDetail.as_view()),

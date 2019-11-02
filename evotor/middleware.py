@@ -19,11 +19,11 @@ class LogsMiddleware(MiddlewareMixin):
     content = None
 
     def process_request(self, request):
+        # print request.META
         # Фильтруем только запросы к API
-        print request.META
-        if request.META['PATH_INFO'][0:8] == u'/api/v1/':
+        if request.META['PATH_INFO'][0:7] != u'/admin/':
             try:
-                if request.method == "POST" or request.method == "OPTIONS":
+                if request.method == "POST":
                     self.content = str(request.body.decode('utf-8')).replace(',"', ', "')
                 elif request.method == "GET":
                     self.content = str(request.GET)

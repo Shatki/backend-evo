@@ -21,6 +21,6 @@ from api.views import DashboardView
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api/v1/', include('api.urls')),
-    url(r'^.*', xframe_options_exempt(DashboardView.as_view()), name='DashboardView')
+    url(r'^', include('api.urls'))
+    #url(r'^.*', xframe_options_exempt(DashboardView.as_view()), name='DashboardView')
 ]
