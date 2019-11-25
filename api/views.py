@@ -12,6 +12,7 @@ from api.models import Token
 from applications.models import Application, Subscription, InstallationEvent, Installation
 from stores.models import Store
 from users.models import User
+import requests
 
 
 # Временная затычка
@@ -353,10 +354,48 @@ class InstallationEventView(APIView):
 
 
 class StoresListView(APIView):
-    def get(self, request, user_id, token, *args, **kwargs):
-        self.response.data = {
-            "userId": user_id,
-            "token": token
+    def get(self, request, token, *args, **kwargs):
+        url = "https://api.evotor.ru/api/v1/inventories/stores/search"
+        # data = {'data': [{'key1': 'val1'}, {'key2': 'val2'}]}
+        headers = {
+            'X-Authorization': token,
+            'Content-Type': 'application/json'
         }
-        self.response.to_json()
+        result = requests.get(url, headers=headers)
+        if result.status_code == 200:
+            self.response.data = result.text
+            self.response.to_json()
+        else:
+            self.response.add_error(error_code=result.status_code,
+                                    reason=_('Request error'),
+                                    subject="Stores")
+
         return self.response
+
+
+class ProductsListView(APIView):
+    """
+        Запрос информации с облака Эвотор с обновлением БД
+        Так же должна сверяться информация
+
+    """
+    def get(self, request, store_uuid, token, *args, **kwargs):
+        # url = "https://api.evotor.ru/api/v1/inventories/stores/20180507-447F-40C1-8081-52D4B03CD7AB/products"
+        url = "https://api.evotor.ru/api/v1/inventories/stores/%s/products" % store_uuid
+        headers = {
+            'X-Authorization': token,
+            'Content-Type': 'application/json'
+        }
+        result = requests.get(url, headers=headers)
+        if result.status_code == 200:
+            # Todo обновление БД и сверка с данными Эвотора
+            self.response.data = result.text
+            self.response.to_json()
+        else:
+            self.response.add_error(error_code=result.status_code,
+                                    reason=_('Request error'),
+                                    subject="Stores")
+
+        return self.response
+
+

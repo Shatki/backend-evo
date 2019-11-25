@@ -28,19 +28,19 @@ PRODUCT_TYPES = (
 
 NO_VAT = u'NO_VAT'
 VAT_10 = u'VAT_10'
-VAT_18 = u'VAT_18'
+VAT_20 = u'VAT_20'
 VAT_0 = u'VAT_0'
-VAT_18_118 = u'VAT_18_118'
+VAT_20_120 = u'VAT_20_120'
 VAT_10_110 = u'VAT_10_110'
 
 TAX_TYPE_DEFAULT = NO_VAT
 
 TAX_TYPES = (
-    (NO_VAT, 'НДС не облагается'),
+    (NO_VAT, 'Без НДС'),
     (VAT_10, 'НДС 10%'),
-    (VAT_18, 'НДС 18%'),
+    (VAT_20, 'НДС 20%'),
     (VAT_0, 'НДС 0%'),
-    (VAT_18_118, 'НДС 18/118'),
+    (VAT_20_120, 'НДС 20/120'),
     (VAT_10_110, 'НДС 10/110'),
 )
 

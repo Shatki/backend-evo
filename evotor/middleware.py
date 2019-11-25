@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from api import status
 from api.crypto import decrypt
 from users.models import User
-from api.models import Log
+from api.models import Log, Token
 from api.response import APIResponse
 
 
@@ -56,7 +56,7 @@ class HttpManagementMiddleware(MiddlewareMixin):
         3.
     """
     def process_request(self, request):
-        # Переносим параметры GET запроса в заголовок
+        # Переносим параметры GET запроса в HEADERS
         if request.method == 'GET':
             try:
                 if 'token' in request.GET:
@@ -82,12 +82,22 @@ class TokenMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
-        # Если в заголовке нет авторизации -> пропускаем на сайт без авторизации
+        # Если в заголовке нет авторизации -> пропускаем только на сайт без авторизации без API
         request.META['HTTP_AUTH'] = settings.HTTP_AUTH_ANONYMOUS
-        if 'HTTP_AUTHORIZATION' not in request.META:
+        # Если нет заголовка авторизации со стороны Облака и со стороны пользователя -> без API
+        auth_header = None
+        x_auth_header = None
+
+        if 'HTTP_AUTHORIZATION' in request.META:
+            auth_header = request.META.get('HTTP_AUTHORIZATION', b'')
+
+        if 'HTTP_X_AUTHORIZATION' in request.META:
+            x_auth_header = request.META.get('HTTP_X_AUTHORIZATION', b'')
+
+        if auth_header is None and x_auth_header is None:
             return None
 
-        auth_header = request.META.get('HTTP_AUTHORIZATION', b'')
+        # Authorization
         if auth_header:
             auth = auth_header.split(" ")
 
@@ -147,6 +157,18 @@ class TokenMiddleware(MiddlewareMixin):
                 request.user = user
                 request.META['HTTP_AUTH'] = settings.HTTP_AUTH_USER
             return None
+
+        # X-Authorization
+        elif x_auth_header:
+            # пробуем найти пользователя по этому токену и заносим данные авторизации в Headers
+            key = x_auth_header.lower()
+            try:
+                token = Token.objects.get(key=key)
+            except Token.DoesNotExist:
+                return APIResponse(error_code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
+                                   reason=_('Invalid user token.'),
+                                   subject="Token")
+
         else:
             return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
                                reason=_('Wrong Authorization data.'),

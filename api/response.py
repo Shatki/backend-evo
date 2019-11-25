@@ -49,10 +49,11 @@ class APIResponse(HttpResponse):
         try:
             self.status_code = status.errors[error_code]
         except KeyError as e:
-            reason = e.args[0]
-            subject = "undefined unit"
+            # Сервер ничего не ответил кроме кода ошибки
+            reason = reason or e.args[0]
+            subject = subject or "undefined error"
             # можно также присвоить значение по умолчанию вместо бросания исключения
-            self.status_code = status.HTTP_400_BAD_REQUEST
+            self.status_code = error_code or status.HTTP_400_BAD_REQUEST
         self.errors.append({
             "code": error_code,
             # Причина возникновения ошибки

@@ -16,9 +16,12 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.views.decorators.csrf import csrf_exempt
+# from graphene_django.views import GraphQLView
+
 from . import views
 
 urlpatterns = [
+    # Урлы для облака Эвотор
     url(r'^user/create/$', csrf_exempt(views.UserCreateView.as_view()), name="create"),
     url(r'^user/verify/$', csrf_exempt(views.UserVerifyView.as_view()), name="verify"),
     url(r'^user/token/$', csrf_exempt(views.UserTokenView.as_view()), name="token"),
@@ -26,17 +29,26 @@ urlpatterns = [
     url(r'^subscription/event/$', csrf_exempt(views.SubscriptionEventView.as_view()), name="subscriptionEvent"),
     url(r'^installation/event/$', csrf_exempt(views.InstallationEventView.as_view()), name="installationEvent"),
 
-
     # Урлы для работы фронтэнда
-    # https://api.evotorservice.ru/01-000000000738894/stores/a06c4306-732d-4914-9543-a588af06c683
-    url(r'^user/(?P<user_id>[0-9-]+)/stores/(?P<token>[0-9A-Za-z-]+)$',
+    # Запрос всех магазинов пользователя, по токену и user_id
+    # https://api.evotorservice.ru/a06c4306-732d-4914-9543-a588af06c683/stores
+    url(r'^(?P<token>[0-9A-Za-z-]+)/stores/$',
         csrf_exempt(views.StoresListView.as_view()), name="stores"),
 
-    #url(r'^stores/$', views.StoreList.as_view()),
+    # Запрос всех товаров, по токену и user_id
+    # https://api.evotorservice.ru/a06c4306-732d-4914-9543-a588af06c683/store/20180507-447F-40C1-8081-52D4B03CD7AB/products/
+    url(r'^(?P<token>[0-9A-Fa-f-]+)/store/(?P<store_uuid>[0-9A-Fa-f-]+)/products/$',
+        csrf_exempt(views.ProductsListView.as_view()), name="products"),
+
+
+    #url(r'^user/(?P<user_id>[0-9-]+)/stores/(?P<token>[0-9A-Za-z-]+)$', views.StoreList.as_view()),
     #url(r'^stores/(?P<uuid>[0-9A-Fa-f-]+/$)', views.StoreDetail.as_view()),
     # url('', views.UserList.as_view()),
     # url(r'^rest-auth/', include('rest_auth.urls')),
     # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+
+    # GraphQL API
+    # url(r'^graphql/', GraphQLView.as_view(graphiql=True)),
 ]
 
 # urlpatterns += router.urls
