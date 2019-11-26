@@ -121,7 +121,6 @@ INSTALLED_APPS = [
 """
 
 MIDDLEWARE = [
-    'evotor.middleware.HttpManagementMiddleware',
     'evotor.middleware.LogsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

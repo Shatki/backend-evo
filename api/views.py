@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 from django.utils.translation import ugettext_lazy as _
 
 from api.response import APIView, status
-from api.decorators import cloud_authorization
+from api.decorators import cloud_only, user_only
 from api.models import Token
 
 from applications.models import Application, Subscription, InstallationEvent, Installation
@@ -56,7 +56,7 @@ class UserCreateView(APIView):
            *2-х дневный
         """
 
-    @cloud_authorization
+    @cloud_only
     def post(self, request, *args, **kwargs):
         # Получаем и преобразуем данные из request.body в JSON
         self.data = self.load_json(request)
@@ -116,7 +116,7 @@ class UserVerifyView(APIView):
         }
     """
 
-    @cloud_authorization
+    @cloud_only
     def post(self, request, *args, **kwargs):
         # Получаем и преобразуем данные из request.body в JSON
         self.data = self.load_json(request)
@@ -167,7 +167,7 @@ class UserTokenView(APIView):
         HTTP 200 OK
     """
 
-    @cloud_authorization
+    @cloud_only
     def post(self, request, *args, **kwargs):
         # Получаем и преобразуем данные из request.body в JSON
         self.data = self.load_json(request)
@@ -229,7 +229,7 @@ class SubscriptionEventView(APIView):
         HTTP 200 OK
     """
 
-    @cloud_authorization
+    @cloud_only
     def post(self, request, *args, **kwargs):
         # Получаем и преобразуем данные из request.body в JSON
         self.data = self.load_json(request)
@@ -296,7 +296,7 @@ class InstallationEventView(APIView):
         HTTP 200 OK
     """
 
-    @cloud_authorization
+    @cloud_only
     def post(self, request, *args, **kwargs):
         self.data = self.load_json(request)
         # Всю работу с токенами делает миддлварь, мы только берем данные из запроса
@@ -379,11 +379,12 @@ class ProductsListView(APIView):
         Так же должна сверяться информация
 
     """
-    def get(self, request, store_uuid, token, *args, **kwargs):
+    @user_only
+    def get(self, request, store_uuid, *args, **kwargs):
         # url = "https://api.evotor.ru/api/v1/inventories/stores/20180507-447F-40C1-8081-52D4B03CD7AB/products"
         url = "https://api.evotor.ru/api/v1/inventories/stores/%s/products" % store_uuid
         headers = {
-            'X-Authorization': token,
+            'X-Authorization': request.META.get('HTTP_AUTH_TOKEN', b''),
             'Content-Type': 'application/json'
         }
         result = requests.get(url, headers=headers)
@@ -398,4 +399,6 @@ class ProductsListView(APIView):
 
         return self.response
 
-
+    @user_only
+    def post(self, request, *args, **kwargs):
+        return self.response

@@ -28,7 +28,7 @@ class APIResponse(HttpResponse):
     def to_json(self):
         self.content = json.dumps(self.data, cls=DjangoJSONEncoder)
 
-    def make_response(self):
+    def __make_response__(self):
         """
         Создание ответа API
         Метод класса для формирования ответа из данных класса
@@ -61,7 +61,7 @@ class APIResponse(HttpResponse):
             # Название неизвестного или отсутствующего поля
             "subject": subject
         })
-        self.make_response()
+        self.__make_response__()
         self.to_json()
 
 
@@ -167,5 +167,7 @@ class APIView(View):
         payload = json.dumps({'id': user.userId, 'usrnm': user.username, 'exp': expiry})
         return encrypt(payload, settings.SECRET_KEY)
 
-    def post(self, request, *args, **kwargs):
+    def options(self, request, *args, **kwargs):
+        # self.allowed_methods = ['get', 'post', 'put', 'delete', 'options']
+        # self.response['allow'] = ','.join([self.allowed_methods])
         return self.response

@@ -30,14 +30,16 @@ urlpatterns = [
     url(r'^installation/event/$', csrf_exempt(views.InstallationEventView.as_view()), name="installationEvent"),
 
     # Урлы для работы фронтэнда
+    # Авторизация пользователя к бекенду
+
     # Запрос всех магазинов пользователя, по токену и user_id
     # https://api.evotorservice.ru/a06c4306-732d-4914-9543-a588af06c683/stores
-    url(r'^(?P<token>[0-9A-Za-z-]+)/stores/$',
+    url(r'^stores/$',
         csrf_exempt(views.StoresListView.as_view()), name="stores"),
 
     # Запрос всех товаров, по токену и user_id
     # https://api.evotorservice.ru/a06c4306-732d-4914-9543-a588af06c683/store/20180507-447F-40C1-8081-52D4B03CD7AB/products/
-    url(r'^(?P<token>[0-9A-Fa-f-]+)/store/(?P<store_uuid>[0-9A-Fa-f-]+)/products/$',
+    url(r'^store/(?P<store_uuid>[0-9A-Fa-f-]+)/products/$',
         csrf_exempt(views.ProductsListView.as_view()), name="products"),
 
 

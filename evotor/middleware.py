@@ -4,6 +4,7 @@ import json
 import evotor.settings as settings
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth import authenticate, login
 from api import status
 from api.crypto import decrypt
 from users.models import User
@@ -30,7 +31,7 @@ class LogsMiddleware(MiddlewareMixin):
 
                 if self.content is not None:
                     self.log = Log.objects.create(request=self.content)
-                    self.log.headers = str(request.META)    # .replace(',"', ', "')
+                    self.log.headers = str(request.META)  # .replace(',"', ', "')
                     self.log.save()
 
             except Exception as e:
@@ -45,26 +46,6 @@ class LogsMiddleware(MiddlewareMixin):
             except Exception as e:
                 print 'process_response_exceprion: ', e.args[0]
         return response
-
-
-class HttpManagementMiddleware(MiddlewareMixin):
-    """
-        Миддлварь для управления HTTP запросами
-
-        1. Переносит параметры GET запроса в заголовки
-        2.
-        3.
-    """
-    def process_request(self, request):
-        # Переносим параметры GET запроса в HEADERS
-        if request.method == 'GET':
-            try:
-                if 'token' in request.GET:
-                    request.META['HTTP_AUTH_TOKEN'] = request.GET['token']
-                if 'user_id' in request.GET:
-                    request.META['HTTP_AUTH_USER_ID'] = request.GET['user_id']
-            except Exception as e:
-                print 'HttpManagementMiddleware warning: ', e.args[0]
 
 
 class TokenMiddleware(MiddlewareMixin):
@@ -82,22 +63,27 @@ class TokenMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
-        # Если в заголовке нет авторизации -> пропускаем только на сайт без авторизации без API
+        # Если в заголовке нет авторизации -> пропускаем только на сайт без авторизации и API
         request.META['HTTP_AUTH'] = settings.HTTP_AUTH_ANONYMOUS
         # Если нет заголовка авторизации со стороны Облака и со стороны пользователя -> без API
+        # Basic or Bearer
         auth_header = None
         x_auth_header = None
 
+        # Авторизация со стороны Облака Эвотор
         if 'HTTP_AUTHORIZATION' in request.META:
             auth_header = request.META.get('HTTP_AUTHORIZATION', b'')
 
+        # Авторизация со стороны Fronend
+        # (Frontend получает токен и user_id из GET запроса Облака Эвотор)
+        # Этот же токен используется для доступа к данным Облака
         if 'HTTP_X_AUTHORIZATION' in request.META:
             x_auth_header = request.META.get('HTTP_X_AUTHORIZATION', b'')
 
         if auth_header is None and x_auth_header is None:
             return None
 
-        # Authorization
+        # Cloud Authorization
         if auth_header:
             auth = auth_header.split(" ")
 
@@ -157,18 +143,27 @@ class TokenMiddleware(MiddlewareMixin):
                 request.user = user
                 request.META['HTTP_AUTH'] = settings.HTTP_AUTH_USER
             return None
-
-        # X-Authorization
+        # User Authorization
         elif x_auth_header:
-            # пробуем найти пользователя по этому токену и заносим данные авторизации в Headers
-            key = x_auth_header.lower()
+            try:
+                key = x_auth_header.decode(settings.CODING)
+            except UnicodeError:
+                return APIResponse(error_code=status.ERROR_CODE_1001_WRONG_TOKEN,
+                                   reason=_(
+                                       'Invalid token header. Token string should not contain invalid characters.'),
+                                   subject="X-Authorization")
+
             try:
                 token = Token.objects.get(key=key)
-            except Token.DoesNotExist:
+            except User.DoesNotExist:
                 return APIResponse(error_code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
                                    reason=_('Invalid user token.'),
                                    subject="Token")
+            # логиним пользователя
+            login(request, token.user)
 
+            request.META['HTTP_AUTH'] = settings.HTTP_AUTH_USER
+            request.META['HTTP_AUTH_TOKEN'] = token.key
         else:
             return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
                                reason=_('Wrong Authorization data.'),

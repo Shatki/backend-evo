@@ -17,8 +17,9 @@ def benchmark(func):
     return wrapper
 
 
-def cloud_authorization(func):
+def cloud_only(func):
     def wrapper(self, request, *args, **kwargs):
+        #print "cloud-only", request.META['HTTP_AUTH']
         if request.META['HTTP_AUTH'] == settings.HTTP_AUTH_CLOUD:
             return func(self, request, *args, **kwargs) or self.response
         else:
@@ -29,14 +30,15 @@ def cloud_authorization(func):
     return wrapper
 
 
-def user_authorization(func):
+def user_only(func):
     # Todo Нужно доделать!!!
     def wrapper(self, request, *args, **kwargs):
-        if request.META['HTTP_AUTH'] == settings.HTTP_AUTH_CLOUD:
+        # print "user-only", request.user
+        if request.META['HTTP_AUTH'] == settings.HTTP_AUTH_USER:
             return func(self, request, *args, **kwargs) or self.response
         else:
             self.response.add_error(status.ERROR_CODE_1001_WRONG_TOKEN,
                                     reason=_('User token error'),
-                                    subject="Authorization")
+                                    subject="X-Authorization")
             return self.response
     return wrapper
