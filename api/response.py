@@ -166,8 +166,3 @@ class APIView(View):
         expiry = str(datetime.date.today() + datetime.timedelta(days=settings.AUTH_TOKEN_EXPIRY_DAYS))
         payload = json.dumps({'id': user.userId, 'usrnm': user.username, 'exp': expiry})
         return encrypt(payload, settings.SECRET_KEY)
-
-    def options(self, request, *args, **kwargs):
-        # self.allowed_methods = ['get', 'post', 'put', 'delete', 'options']
-        # self.response['allow'] = ','.join([self.allowed_methods])
-        return self.response

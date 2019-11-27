@@ -12,6 +12,29 @@ from api.models import Log, Token
 from api.response import APIResponse
 
 
+class CorsOptionsRequestMiddleware(MiddlewareMixin):
+    """
+        Миддлварь которая определяет OPTIONS запрос от браузера и разрешает кроссдоменные запросы
+        отправляя ответ 204-No Content
+    """
+    def process_request(self, request):
+        if request.method == "OPTIONS":
+            response = APIResponse()
+            try:
+                response["Access-Control-Allow-Origin"] = request.META['HTTP_ORIGIN']
+                response["Access-Control-Allow-Methods"] = 'POST, GET, OPTIONS, PUT, DELETE'
+                # request.META['HTTP_ACCESS_CONTROL_REQUEST_METHOD']
+                response["Access-Control-Allow-Credentials"] = 'true'
+                response["Access-Control-Allow-Headers"] = 'Content-Type, X-Auth-Token, Origin'
+                # request.META['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
+                response.status_code = status.HTTP_204_NO_CONTENT
+            except Exception as e:
+                print 'CorsOptionsRequestMiddleware exception: ', e.args[0]
+            return response
+        else:
+            return None
+
+
 class LogsMiddleware(MiddlewareMixin):
     """
         Миддлварь для логирования HTTP запросов
@@ -27,7 +50,9 @@ class LogsMiddleware(MiddlewareMixin):
                 if request.method == "POST":
                     self.content = str(request.body.decode('utf-8')).replace(',"', ', "')
                 elif request.method == "GET":
-                    self.content = str(request.GET)
+                    self.content = str(request.META['PATH_INFO'])
+                if request.method == "OPTIONS":
+                    self.content = str(request.body.decode('utf-8')).replace(',"', ', "')
 
                 if self.content is not None:
                     self.log = Log.objects.create(request=self.content)
@@ -36,6 +61,7 @@ class LogsMiddleware(MiddlewareMixin):
 
             except Exception as e:
                 print 'process_request_exception: ', e.args[0]
+        return None
 
     def process_response(self, request, response):
         if self.log is not None:
@@ -44,7 +70,7 @@ class LogsMiddleware(MiddlewareMixin):
                 self.log.status = response.status_code
                 self.log.save()
             except Exception as e:
-                print 'process_response_exceprion: ', e.args[0]
+                print 'LogsMiddleware exception: ', e.args[0]
         return response
 
 
@@ -77,8 +103,8 @@ class TokenMiddleware(MiddlewareMixin):
         # Авторизация со стороны Fronend
         # (Frontend получает токен и user_id из GET запроса Облака Эвотор)
         # Этот же токен используется для доступа к данным Облака
-        if 'HTTP_X_AUTHORIZATION' in request.META:
-            x_auth_header = request.META.get('HTTP_X_AUTHORIZATION', b'')
+        if 'HTTP_X_AUTH_TOKEN' in request.META:
+            x_auth_header = request.META.get('HTTP_X_AUTH_TOKEN', b'')
 
         if auth_header is None and x_auth_header is None:
             return None
@@ -151,8 +177,7 @@ class TokenMiddleware(MiddlewareMixin):
                 return APIResponse(error_code=status.ERROR_CODE_1001_WRONG_TOKEN,
                                    reason=_(
                                        'Invalid token header. Token string should not contain invalid characters.'),
-                                   subject="X-Authorization")
-
+                                   subject="X-Auth-Token")
             try:
                 token = Token.objects.get(key=key)
             except User.DoesNotExist:
@@ -163,8 +188,8 @@ class TokenMiddleware(MiddlewareMixin):
             login(request, token.user)
 
             request.META['HTTP_AUTH'] = settings.HTTP_AUTH_USER
-            request.META['HTTP_AUTH_TOKEN'] = token.key
         else:
             return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
                                reason=_('Wrong Authorization data.'),
                                subject="Authorization")
+        return None

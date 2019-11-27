@@ -45,9 +45,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'corsheaders',
-
     'api.apps.ApiConfig',
     'applications.apps.ApplicationsConfig',
     'users.apps.UsersConfig',
@@ -61,61 +58,33 @@ INSTALLED_APPS = [
 Несколько советов о порядке промежуточных слоёв Django:
 
     1 SecurityMiddleware
-
     Должен следовать в начале списка промежуточных слоев, если вы используете SSL перенаправление, чтобы избежать обработки небезопасного запроса другими промежуточными слоями.
-
     2 UpdateCacheMiddleware
-
     Добавлять перед промежуточными слоями, которые могут изменить заголовок Vary (SessionMiddleware, GZipMiddleware, LocaleMiddleware).
-
     3 GZipMiddleware
-
     Добавлять перед промежуточными слоями, которые могут изменять или читать тело ответа.
-
     После UpdateCacheMiddleware: изменяет заголовок Vary.
-
     4 ConditionalGetMiddleware
-
     Перед CommonMiddleware: использует установленный заголовок Etag при USE_ETAGS = True.
-
     5 SessionMiddleware
-
     После UpdateCacheMiddleware: изменяет заголовок Vary.
-
     6 LocaleMiddleware
-
     Следует одним из первых, после SessionMiddleware (использует сессию) и CacheMiddleware (изменяет заголовок Vary).
-
     7 CommonMiddleware
-
     Перед любым промежуточным слоем, который может изменять ответ (вычисляет ETags).
-
     После GZipMiddleware, чтобы заголовок ETag не вычислялся для сжатого ответа.
-
     Ближе к верху: выполняет перенаправление при APPEND_SLASH или PREPEND_WWW равном True.
-
     8 CsrfViewMiddleware
-
     Перед любым промежуточным слоем, который предполагает, что CSRF защита уже выполнена.
-
     9 AuthenticationMiddleware
-
     После SessionMiddleware: использует сессию.
-
     10 MessageMiddleware
-
     После SessionMiddleware: может использовать сессию для хранения данных.
-
     11 FetchFromCacheMiddleware
-
     После любого промежуточного слоя, который может изменить заголовок Vary: его значение используется для генерации ключа в кеше.
-
     12 FlatpageFallbackMiddleware
-
     Должен быть в низу.
-
     13 RedirectFallbackMiddleware
-
     Должен быть в низу.
 
 """
@@ -125,19 +94,16 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # corsheaders
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'evotor.middleware.TokenMiddleware',
+    'evotor.middleware.CorsOptionsRequestMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 ]
-
-GRAPHENE = {
-    'SCHEMA': 'app.schema.schema' # Where your Graphene schema lives
-}
 
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
@@ -187,12 +153,6 @@ CSRF_TRUSTED_ORIGINS = [
     u'evotorservice.ru',
     u'.evotorservice.ru',
     u'127.0.0.1:8000',
-]
-
-# CORS Setup
-CORS_ORIGIN_WHITELIST = [
-    "https://evotorservice.ru",
-    "http://localhost:8000"
 ]
 
 
