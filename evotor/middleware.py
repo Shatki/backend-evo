@@ -12,27 +12,30 @@ from api.models import Log, Token
 from api.response import APIResponse
 
 
-class CorsOptionsRequestMiddleware(MiddlewareMixin):
+class CorsHeadersMiddleware(MiddlewareMixin):
     """
         Миддлварь которая определяет OPTIONS запрос от браузера и разрешает кроссдоменные запросы
         отправляя ответ 204-No Content
     """
     def process_request(self, request):
-        if request.method == "OPTIONS":
+        # Если пришел предварительный запрос, то добавим разрешение на запрашиваемые заголовки
+        if request.method == 'OPTIONS' and \
+                "HTTP_ACCESS_CONTROL_REQUEST_METHOD" in request.META:
             response = APIResponse()
-            try:
-                response["Access-Control-Allow-Origin"] = request.META['HTTP_ORIGIN']
-                response["Access-Control-Allow-Methods"] = 'POST, GET, OPTIONS, PUT, DELETE'
-                # request.META['HTTP_ACCESS_CONTROL_REQUEST_METHOD']
-                response["Access-Control-Allow-Credentials"] = 'true'
-                response["Access-Control-Allow-Headers"] = 'Content-Type, X-Auth-Token, Origin'
-                # request.META['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
-                response.status_code = status.HTTP_204_NO_CONTENT
-            except Exception as e:
-                print 'CorsOptionsRequestMiddleware exception: ', e.args[0]
+            response["Access-Control-Allow-Methods"] = request.META['HTTP_ACCESS_CONTROL_REQUEST_METHOD']
+            response["Access-Control-Allow-Headers"] = request.META['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] or 'GET, POST, OPTIONS'
             return response
-        else:
-            return None
+        return None
+
+    def process_response(self, request, response):
+        response["Access-Control-Allow-Credentials"] = 'true'
+        try:
+            response["Access-Control-Allow-Origin"] = request.META['HTTP_ORIGIN']
+            if request.method == 'OPTIONS':
+                response.status_code = status.HTTP_204_NO_CONTENT
+        except Exception as e:
+            print 'CorsHeadersMiddleware exception: ', e.args[0]
+        return response
 
 
 class LogsMiddleware(MiddlewareMixin):

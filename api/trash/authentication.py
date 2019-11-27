@@ -1,4 +1,4 @@
-from rest_framework import authentication, exceptions
+# from rest_framework import authentication, exceptions
 from django.utils.translation import ugettext_lazy as _
 
 

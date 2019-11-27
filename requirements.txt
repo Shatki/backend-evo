@@ -4,6 +4,7 @@ Markdown
 Django-filter
 Pillow==6.2.1
 six
+requests
 pycryptodome
 Django-ckeditor
 Django-unixdatetimefield
