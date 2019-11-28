@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import json
 from django.shortcuts import render_to_response
 from django.views.generic import TemplateView
 from django.utils.translation import ugettext_lazy as _
@@ -12,6 +12,7 @@ from api.models import Token
 from applications.models import Application, Subscription, InstallationEvent, Installation
 from stores.models import Store
 from users.models import User
+from products.models import Product, Tax, Measure, BarCode
 import requests
 
 
@@ -354,17 +355,16 @@ class InstallationEventView(APIView):
 
 
 class StoresListView(APIView):
-    def get(self, request, token, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         url = "https://api.evotor.ru/api/v1/inventories/stores/search"
         # data = {'data': [{'key1': 'val1'}, {'key2': 'val2'}]}
         headers = {
-            'X-Authorization': token,
+            'X-Authorization': request.META.get('HTTP_X_AUTH_TOKEN', b''),
             'Content-Type': 'application/json'
         }
         result = requests.get(url, headers=headers)
-        if result.status_code == 200:
-            self.response.data = result.text
-            self.response.to_json()
+        if result.status_code == status.HTTP_200_OK:
+            self.response.content = result.content
         else:
             self.response.add_error(error_code=result.status_code,
                                     reason=_('Request error'),
@@ -375,9 +375,8 @@ class StoresListView(APIView):
 
 class ProductsListView(APIView):
     """
-        Запрос информации с облака Эвотор с обновлением БД
-        Так же должна сверяться информация
-
+        Запрос информации с облака Эвотор
+        Так же делает обновлением внутренней БД
     """
 
     @user_only
@@ -390,7 +389,37 @@ class ProductsListView(APIView):
         }
         result = requests.get(url, headers=headers)
         if result.status_code == status.HTTP_200_OK:
-            # Todo обновление БД и сверка с данными Эвотора
+            # Todo: обновление БД и сверка с данными Эвотора
+            products = json.loads(result.content)
+            for item in products:
+                product, created = Product.objects.get_or_create(uuid=item['uuid'])
+                group = item['group']
+                product.group = group
+                product.name = item['name']
+                product.parentUuid = item['parentUuid']
+
+                product.type = item['type'] if not group else None
+                product.quantity = item['quantity'] if not group else "0.000"
+                product.measureName, measure_created = Measure.objects.get_or_create(name=item['measureName'])
+                product.tax, tax_created = Tax.objects.get_or_create(name=item['tax'])
+                product.price = item['price']
+                product.allowToSell = item['allowToSell']
+                product.costPrice = item['costPrice']
+                product.description = item['description']
+                product.articleNumber = item['articleNumber']
+                product.code = item['code']
+
+                for code in item['barCodes']:
+                    # Режим обновления! только добавление новых без удаления старых
+                    product.barCodes.add(code)
+
+                # product.name = item['name']
+                # product.name = item['name']
+                # product.name = item['name']
+                # product.name = item['name']
+
+
+
             self.response.content = result.content
             # self.response.to_json()
         else:

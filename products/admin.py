@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Product, BarCode
+from .models import Product, BarCode, AlcoCode, Measure, Tax
 
 
 # Register your models here.
@@ -27,5 +27,25 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(BarCode)
 class BarCodeAdmin(admin.ModelAdmin):
     list_display = ('code',
+                    'product'
+                    )
+
+
+@admin.register(AlcoCode)
+class AlcoCodeAdmin(admin.ModelAdmin):
+    list_display = ('code',
+                    'product'
+                    )
+
+
+@admin.register(Measure)
+class MeasureAdmin(admin.ModelAdmin):
+    list_display = ('name',
+                    )
+
+
+@admin.register(Tax)
+class TaxAdmin(admin.ModelAdmin):
+    list_display = ('name',
                     )
 

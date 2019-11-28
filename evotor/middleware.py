@@ -30,11 +30,12 @@ class CorsHeadersMiddleware(MiddlewareMixin):
     def process_response(self, request, response):
         response["Access-Control-Allow-Credentials"] = 'true'
         try:
-            response["Access-Control-Allow-Origin"] = request.META['HTTP_ORIGIN']
+            if "HTTP_ORIGIN" in request.META:
+                response["Access-Control-Allow-Origin"] = request.META['HTTP_ORIGIN']
             if request.method == 'OPTIONS':
                 response.status_code = status.HTTP_204_NO_CONTENT
         except Exception as e:
-            print 'CorsHeadersMiddleware exception: ', e.args[0]
+            print 'CorsHeadersMiddleware exception: ', str(e)
         return response
 
 
@@ -63,7 +64,7 @@ class LogsMiddleware(MiddlewareMixin):
                     self.log.save()
 
             except Exception as e:
-                print 'process_request_exception: ', e.args[0]
+                print 'process_request_exception: ', str(e)
         return None
 
     def process_response(self, request, response):
@@ -73,7 +74,7 @@ class LogsMiddleware(MiddlewareMixin):
                 self.log.status = response.status_code
                 self.log.save()
             except Exception as e:
-                print 'LogsMiddleware exception: ', e.args[0]
+                print 'LogsMiddleware exception: ', str(e)
         return response
 
 
@@ -90,7 +91,6 @@ class TokenMiddleware(MiddlewareMixin):
         4. Если токен пользователя, то авторизуем его через токен
 
     """
-
     def process_request(self, request):
         # Если в заголовке нет авторизации -> пропускаем только на сайт без авторизации и API
         request.META['HTTP_AUTH'] = settings.HTTP_AUTH_ANONYMOUS
@@ -103,7 +103,7 @@ class TokenMiddleware(MiddlewareMixin):
         if 'HTTP_AUTHORIZATION' in request.META:
             auth_header = request.META.get('HTTP_AUTHORIZATION', b'')
 
-        # Авторизация со стороны Fronend
+        # Авторизация со стороны Frontend
         # (Frontend получает токен и user_id из GET запроса Облака Эвотор)
         # Этот же токен используется для доступа к данным Облака
         if 'HTTP_X_AUTH_TOKEN' in request.META:
@@ -186,7 +186,7 @@ class TokenMiddleware(MiddlewareMixin):
             except User.DoesNotExist:
                 return APIResponse(error_code=status.ERROR_CODE_1002_WRONG_USER_TOKEN,
                                    reason=_('Invalid user token.'),
-                                   subject="Token")
+                                   subject="X-Auth-Token")
             # логиним пользователя
             login(request, token.user)
 
@@ -194,5 +194,5 @@ class TokenMiddleware(MiddlewareMixin):
         else:
             return APIResponse(error_code=status.ERROR_CODE_2003_REQUEST_ERROR,
                                reason=_('Wrong Authorization data.'),
-                               subject="Authorization")
+                               subject="X-Auth-Token")
         return None

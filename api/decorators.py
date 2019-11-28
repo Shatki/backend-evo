@@ -18,8 +18,8 @@ def benchmark(func):
 
 
 def cloud_only(func):
+    # Декоратор оборачивающий методы GET, POST разрешающий запросы только с Облака Эвотор
     def wrapper(self, request, *args, **kwargs):
-        #print "cloud-only", request.META['HTTP_AUTH']
         if request.META['HTTP_AUTH'] == settings.HTTP_AUTH_CLOUD:
             return func(self, request, *args, **kwargs) or self.response
         else:
@@ -31,7 +31,8 @@ def cloud_only(func):
 
 
 def user_only(func):
-    # Todo Нужно доделать!!!
+    # Декоратор оборачивающий методы GET, POST для проверки авторизации
+    # с помощью токена X-Auth-Token.
     def wrapper(self, request, *args, **kwargs):
         # print "user-only", request.user
         if request.META['HTTP_AUTH'] == settings.HTTP_AUTH_USER:
@@ -39,6 +40,6 @@ def user_only(func):
         else:
             self.response.add_error(status.ERROR_CODE_1001_WRONG_TOKEN,
                                     reason=_('User token error'),
-                                    subject="X-Authorization")
+                                    subject="X-Auth-Token")
             return self.response
     return wrapper

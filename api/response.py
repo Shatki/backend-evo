@@ -14,10 +14,13 @@ from api.models import Token
 class APIResponse(HttpResponse):
     def __init__(self, data=b'', status_code=status.HTTP_200_OK,
                  error_code=None, reason=None, subject=None, **kwargs):
+        # Данные в форматах Django для подготовки к ответу
         self.data = data
         if self.data is not None:
             self.to_json()
+        # Подготовленные данные для отправзи на запрос
         self.content = b''
+        # Список ошибок, для отправки ответа со списком ошибок. сontent не отправляется
         self.errors = []
         self.status_code = status_code
         if error_code:
@@ -26,6 +29,11 @@ class APIResponse(HttpResponse):
         super(APIResponse, self).__init__(content=self.content, status=self.status_code, **kwargs)
 
     def to_json(self):
+        """
+            Конвертирует данные Django в Json данные для передачи
+            content -> данные для отправки
+        :return:
+        """
         self.content = json.dumps(self.data, cls=DjangoJSONEncoder)
 
     def __make_response__(self):
@@ -68,6 +76,7 @@ class APIResponse(HttpResponse):
 class APIView(View):
     """
         Представление API
+
         :return: self.response (объект HttpResponse)
     """
 
@@ -158,6 +167,7 @@ class APIView(View):
     def create_token(self, user):
         """
             Создание токена пользователя для авторизации запросов из Облака
+
             :param user: пользователь
             :return: токен пользователя для авторизации запросов из Облака
         """

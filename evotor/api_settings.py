@@ -44,6 +44,9 @@ TAX_TYPES = (
     (VAT_10_110, 'НДС 10/110'),
 )
 
+MEASURE_TYPE_DEFAULT = u'шт'
+
+
 SUBSCRIPTION_CREATED = u'SubscriptionCreated'
 ADDONS_UPDATED = u'AddonsUpdated'
 SUBSCRIPTION_ACTIVATED = u'SubscriptionActivated'
