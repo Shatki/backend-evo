@@ -12,7 +12,7 @@ from api.models import Token
 from applications.models import Application, Subscription, InstallationEvent, Installation
 from stores.models import Store
 from users.models import User
-from products.models import Product, Tax, Measure, BarCode
+from products.models import Product, Measure, BarCode
 import requests
 
 
@@ -354,6 +354,19 @@ class InstallationEventView(APIView):
             return self.response
 
 
+class UserSettingsView(APIView):
+    """
+        Хранение и возвращение индивидуальных настроек пользователей
+    """
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        return self.response
+
+    def post(self, request, *args, **kwargs):
+        return self.response
+
+
+# Todo: доработать
 class StoresListView(APIView):
     def get(self, request, *args, **kwargs):
         url = "https://api.evotor.ru/api/v1/inventories/stores/search"
@@ -373,9 +386,11 @@ class StoresListView(APIView):
         return self.response
 
 
+# Todo: доработать
 class ProductsListView(APIView):
     """
         Запрос информации с облака Эвотор
+
         Так же делает обновлением внутренней БД
     """
 
@@ -396,29 +411,29 @@ class ProductsListView(APIView):
                 group = item['group']
                 product.group = group
                 product.name = item['name']
+                product.code = item['code']
                 product.parentUuid = item['parentUuid']
 
                 product.type = item['type'] if not group else None
                 product.quantity = item['quantity'] if not group else "0.000"
                 product.measureName, measure_created = Measure.objects.get_or_create(name=item['measureName'])
-                product.tax, tax_created = Tax.objects.get_or_create(name=item['tax'])
-                product.price = item['price']
-                product.allowToSell = item['allowToSell']
-                product.costPrice = item['costPrice']
-                product.description = item['description']
-                product.articleNumber = item['articleNumber']
-                product.code = item['code']
+                product.tax = item['tax'] if not group else None
+                product.price = item['price'] if not group else None
+                product.allowToSell = item['allowToSell'] if not group else None
+                product.costPrice = item['costPrice'] if not group else None
+                product.description = item['description'] if not group else ""
+                product.articleNumber = item['articleNumber'] if not group else ""
 
                 for code in item['barCodes']:
                     # Режим обновления! только добавление новых без удаления старых
                     product.barCodes.add(code)
 
-                # product.name = item['name']
-                # product.name = item['name']
-                # product.name = item['name']
-                # product.name = item['name']
+                for code in item['alcoCodes']:
+                    product.alcoCodes.add(code)
 
-
+                product.alcoholByVolume = item['alcoholByVolume']
+                product.alcoholProductKindCode = item['alcoholProductKindCode']
+                product.tareVolume = item['tareVolume']
 
             self.response.content = result.content
             # self.response.to_json()
